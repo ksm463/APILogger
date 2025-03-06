@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+  <meta charset="UTF-8">
+  <title>API 통신 현황</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      text-align: center;
+    }
+    th {
+      background-color: #f7f7f7;
+    }
+    button {
+      display: block;
+      margin: 0 auto;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>API 통신 현황</h1>
+  
+  <!-- 테이블 영역 -->
+  <table id="apiTable">
+    <thead>
+      <tr>
+        <th>Index</th>
+        <th>Method</th>
+        <th>User-Agent</th>
+        <th>Client IP</th>
+        <th>Content</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- 자바스크립트로 동적으로 채움 -->
+    </tbody>
+  </table>
+
+  <!-- 최근 조회 버튼 -->
+  <button id="recentBtn">최근 조회</button>
+
+  <script>
+    // 예시 데이터
+    const mockData = [
+      { index: 1, method: 'GET', userAgent: 'Mozilla/5.0', clientIp: '192.168.1.10', content: '사용자 목록 조회', time: '2025-02-28 10:00:00' },
+      { index: 2, method: 'POST', userAgent: 'PostmanRuntime/7.43.0', clientIp: '192.168.1.15', content: '새 사용자 등록', time: '2025-02-28 10:05:00' },
+      { index: 3, method: 'PUT', userAgent: 'Chrome/110.0', clientIp: '192.168.1.20', content: '사용자 정보 수정', time: '2025-02-28 10:10:00' },
+      { index: 4, method: 'DELETE', userAgent: 'Safari/16.2', clientIp: '192.168.1.25', content: '사용자 정보 삭제', time: '2025-02-28 10:15:00' }
+    ];
+
+    // 테이블에 데이터를 채워주는 함수
+    function loadTableData(dataArray) {
+      const tableBody = document.querySelector('#apiTable tbody');
+      tableBody.innerHTML = ''; // 기존 행 초기화
+
+      dataArray.forEach((row) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.index}</td>
+          <td>${row.method}</td>
+          <td>${row.userAgent}</td>
+          <td>${row.clientIp}</td>
+          <td>${row.content}</td>
+          <td>${row.time}</td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+
+    // "최근 조회" 버튼 클릭 시에 테이블 갱신
+    document.getElementById('recentBtn').addEventListener('click', () => {
+      loadTableData(mockData);
+    });
+  </script>
+</body>
+</html>

@@ -1,5 +1,4 @@
-from fastapi import FastAPI, APIRouter, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 from router import get_router, post_router, put_router, delete_router
