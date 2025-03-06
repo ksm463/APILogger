@@ -1,7 +1,7 @@
 from fastapi import Request, APIRouter
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
-from service import create_log_data
+from service import create_log_data, read_csv
 
 
 get_router = APIRouter()
@@ -31,12 +31,15 @@ async def get_latest_work(request: Request):
     print(f"요청 상태: {request.state}")
     print(f"User-Agent: {user_agent}")
     
-    body = await request.json()
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
     
-    # log_data = create_log_data(method, body)
+    log_data = read_csv()
 
-    print(f"받은 요청: {body}")
-    return JSONResponse(content=body)
+    print("log data readed successfully")
+    return JSONResponse(content=log_data)
 
 @get_router.get("/list")
 async def get_work_process(request: Request):

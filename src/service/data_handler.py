@@ -45,3 +45,18 @@ def create_log_data(method: str, user_agent: str, client_ip: str, content: str) 
     )
     
     return log_entry
+
+
+def read_csv():
+    csv_path = Path("/mockapi/src/csv/api_logs.csv")
+    if csv_path.exists():
+        try:
+            df = pd.read_csv(csv_path)
+            data = df.to_dict(orient="records")
+            return data
+        except Exception as e:
+            print("CSV 파일 읽기 실패:", e)
+            return []
+    else:
+        print("CSV 파일이 존재하지 않습니다.")
+        return []
