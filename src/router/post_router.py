@@ -1,19 +1,20 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 from service import create_log_data
-from utility import get_config
+from utility import get_config, get_logger
 
 
 post_router = APIRouter()
 
 @post_router.post("/create")
-async def post_add_work(request: Request, config = Depends(get_config)):
+async def post_add_work(request: Request, config = Depends(get_config), logger = Depends(get_logger)):
     client_ip = request.client.host
     method = request.method
     url = request.url
     headers = request.headers
     user_agent = request.headers.get("user-agent", "Unknown")
 
+    logger.info(f"메서드 요청 들어옴 : {method}")
     print(f"request: {request}")
     print(f"클라이언트 IP: {client_ip}")
     print(f"요청 메서드: {method}")
@@ -25,7 +26,7 @@ async def post_add_work(request: Request, config = Depends(get_config)):
     body = await request.json()
     print(f"받은 요청: {body}")
     
-    log_data = create_log_data(config, method, user_agent, client_ip, content=str(body))
+    log_data = create_log_data(config, logger, method, user_agent, client_ip, content=str(body))
     print(f"받은 요청: {log_data.method}")
 
     message = "work added to AI server Successfully."

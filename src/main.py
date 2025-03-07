@@ -3,6 +3,8 @@ from fastapi.staticfiles import StaticFiles
 import uvicorn
 import configparser
 from router import get_router, post_router, put_router, delete_router
+from utility import setup_logger
+
 
 
 app = FastAPI()
@@ -13,10 +15,12 @@ config_path = "/mockapi/src/config.ini"
 config = configparser.ConfigParser()
 config.read(config_path)
 
-app.state.config = config
+log_path = config['ENV']['LOG_PATH']
+logger = setup_logger(log_path)
+logger.info("Logging server started")
 
-timezone = config['ENV']['TIMEZONE']
-csv_path = config['ENV']['CSV_PATH']
+app.state.config = config
+app.state.logger = logger
 
 
 app.include_router(get_router)

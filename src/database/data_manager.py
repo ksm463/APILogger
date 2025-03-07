@@ -1,5 +1,6 @@
 from pathlib import Path
 import pandas as pd
+import logging
 from utility import APIRequest
 
 
@@ -12,15 +13,15 @@ def get_next_index(csv_path: Path) -> int:
     return line_count if line_count > 0 else 1
 
 
-def write_contents_to_csv(log_entry: APIRequest, csv_path: Path) -> APIRequest:
+def write_contents_to_csv(logger: logging.Logger, log_entry: APIRequest, csv_path: Path) -> APIRequest:
     # index 번호 산출
     next_index = get_next_index(csv_path)
     log_entry.index = next_index
-    print("새로운 인덱스:", next_index)
+    logger.info(f"새 인덱스 번호 부여: {next_index}")
     
     # APIRequestLog객체를 데이터프레임화
     df_entry = pd.DataFrame([log_entry.dict()])
-    print("DataFrame created successfully")
+    logger.debug("DataFrame created successfully")
     
     df_entry.to_csv(
         csv_path,
@@ -29,6 +30,6 @@ def write_contents_to_csv(log_entry: APIRequest, csv_path: Path) -> APIRequest:
         index=False,
         encoding='utf-8'
     )
-    print("CSV written successfully")
+    logger.info("CSV written successfully")
     
     return log_entry
