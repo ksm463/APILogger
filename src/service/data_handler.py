@@ -1,13 +1,15 @@
 from pathlib import Path
 import pandas as pd
 import arrow
+import configparser
 from utility import APIRequest
 from database import write_contents_to_csv
 
 
 
-def create_log_data(method: str, user_agent: str, client_ip: str, content: str) -> APIRequest:
-    current_time = arrow.now('Asia/Seoul').format('YYYY-MM-DD HH:mm:ss')
+def create_log_data(config: configparser,method: str, user_agent: str, client_ip: str, content: str) -> APIRequest:
+    timezone = config['ENV']['TIMEZONE']
+    current_time = arrow.now(timezone).format('YYYY-MM-DD HH:mm:ss')
     
     log_entry = APIRequest(
         index=0,
@@ -19,7 +21,7 @@ def create_log_data(method: str, user_agent: str, client_ip: str, content: str) 
     )
     print("APIRequestLog 객체 생성 완료")
     
-    csv_path = Path("/mockapi/src/database/api_logs.csv")    
+    csv_path = Path(config['ENV']['CSV_PATH'])
     print("csv loaded successfully")
 
 
@@ -28,8 +30,9 @@ def create_log_data(method: str, user_agent: str, client_ip: str, content: str) 
     return log_entry
 
 
-def read_csv():
-    csv_path = Path("/mockapi/src/database/api_logs.csv")
+def read_csv(config: configparser):
+    csv_path = Path(config['ENV']['CSV_PATH'])
+    print(f"CSV 파일 경로: {csv_path}")
     if csv_path.exists():
         try:
             df = pd.read_csv(csv_path)

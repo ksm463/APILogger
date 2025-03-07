@@ -1,13 +1,13 @@
-from fastapi import Request, APIRouter
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 from service import create_log_data
-
+from utility import get_config
 
 
 delete_router = APIRouter()
 
 @delete_router.delete("/delete")
-async def delete_cancel_work(request: Request):
+async def delete_cancel_work(request: Request, config = Depends(get_config)):
     client_ip = request.client.host
     method = request.method
     url = request.url
@@ -24,7 +24,7 @@ async def delete_cancel_work(request: Request):
     
     body = await request.json()
     
-    log_data = create_log_data(method, user_agent, client_ip, content=str(body))
+    log_data = create_log_data(config, method, user_agent, client_ip, content=str(body))
 
-    print(f"받은 요청: {body}")
+    print(f"받은 요청: {log_data.method}")
     return JSONResponse(content=body)

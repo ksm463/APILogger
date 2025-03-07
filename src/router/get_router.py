@@ -1,7 +1,8 @@
-from fastapi import Request, APIRouter
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from service import create_log_data, read_csv
+from utility import get_config
 
 
 get_router = APIRouter()
@@ -15,7 +16,7 @@ async def read_root(request: Request):
 
 
 @get_router.get("/read")
-async def get_latest_work(request: Request):
+async def get_latest_work(request: Request, config = Depends(get_config)):    
     
     client_ip = request.client.host
     method = request.method
@@ -31,18 +32,14 @@ async def get_latest_work(request: Request):
     print(f"요청 상태: {request.state}")
     print(f"User-Agent: {user_agent}")
     
-    try:
-        body = await request.json()
-    except Exception:
-        body = {}
-    
-    log_data = read_csv()
+   
+    log_data = read_csv(config)
 
     print("log data readed successfully")
     return JSONResponse(content=log_data)
 
 @get_router.get("/list")
-async def get_work_process(request: Request):
+async def get_work_process(request: Request, config = Depends(get_config)):
     client_ip = request.client.host
     method = request.method
     url = request.url
@@ -59,7 +56,7 @@ async def get_work_process(request: Request):
     
     body = await request.json()
     
-    log_data = create_log_data(method, user_agent, client_ip, content=str(body))
+    log_data = create_log_data(config, method, user_agent, client_ip, content=str(body))
 
-    print(f"받은 요청: {body}")
+    print(f"받은 요청: {log_data.method}")
     return JSONResponse(content=body)
