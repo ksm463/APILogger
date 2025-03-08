@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 from service import create_log_data
-from utility import get_config, get_logger
+from utility import get_config, get_logger, get_db_engine
 
 
 put_router = APIRouter()
 
 @put_router.put("/update")
-async def put_update_work(request: Request, config = Depends(get_config), logger = Depends(get_logger)):
+async def put_update_work(request: Request, config = Depends(get_config), logger = Depends(get_logger), db_engine = Depends(get_db_engine)):
     client_ip = request.client.host
     method = request.method
     url = request.url
@@ -25,7 +25,7 @@ async def put_update_work(request: Request, config = Depends(get_config), logger
     
     body = await request.json()
     
-    log_data = create_log_data(config, logger, method, user_agent, client_ip, content=str(body))
+    log_data = create_log_data(config, logger, db_engine, method, user_agent, client_ip, str(body))
 
     print(f"받은 요청: {log_data.method}")
     return JSONResponse(content=body)

@@ -4,11 +4,11 @@ import arrow
 import configparser
 import logging
 from utility import APIRequest
-from database import write_contents_to_csv
+from database import write_contents_to_db
 
 
 
-def create_log_data(config: configparser, logger: logging.Logger, method: str, user_agent: str, client_ip: str, content: str) -> APIRequest:
+def create_log_data(config: configparser, logger: logging.Logger, db_engine, method: str, user_agent: str, client_ip: str, content: str) -> APIRequest:
     timezone = config['ENV']['TIMEZONE']
     current_time = arrow.now(timezone).format('YYYY-MM-DD HH:mm:ss')
     
@@ -21,12 +21,8 @@ def create_log_data(config: configparser, logger: logging.Logger, method: str, u
         time=current_time
     )
     logger.info(f"APIRequestLog 객체 생성 완료: {method}, {client_ip}")
-    
-    csv_path = Path(config['ENV']['CSV_PATH'])
-    logger.debug("csv loaded successfully")
 
-
-    log_entry = write_contents_to_csv(logger, log_entry, csv_path)
+    log_entry = write_contents_to_db(logger, db_engine, log_entry)
     
     return log_entry
 
