@@ -20,9 +20,9 @@ def get_logger(request: Request):
 
 def get_db_engine(request: Request):
     try:
-        engine = request.app.state.engine
-        if engine is None:
+        db_engine = request.app.state.db_engine
+        if db_engine is None:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="DB engine not initialized")
-        return engine
+        return db_engine
     except AttributeError:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="DB engine attribute not found in app state")

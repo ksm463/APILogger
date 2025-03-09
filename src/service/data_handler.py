@@ -4,7 +4,7 @@ import arrow
 import configparser
 import logging
 from apistruct import APIRequest
-from database import write_contents_to_db
+from database.data_manager import write_contents_to_db
 
 
 

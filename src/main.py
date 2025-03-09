@@ -24,11 +24,11 @@ logger.info(f"config info : {log_path}")
 
 db_name = config['ENV']['DB_NAME']
 DATABASE_URL = f"sqlite:////mockapi/src/database/{db_name}"
-engine = create_engine(DATABASE_URL, echo=False)
+db_engine = create_engine(DATABASE_URL, echo=False)
 
 app.state.config = config
 app.state.logger = logger
-app.state.engine = engine
+app.state.db_engine = db_engine
 
 app.include_router(get_router)
 app.include_router(post_router)
@@ -36,7 +36,7 @@ app.include_router(put_router)
 app.include_router(delete_router)
 
 def create_db():
-    SQLModel.metadata.create_all(engine)
+    SQLModel.metadata.create_all(db_engine)
 
 @app.on_event("startup")
 def on_startup():
@@ -44,5 +44,6 @@ def on_startup():
 
 
 if __name__== "__main__":
-    
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    host = config['ADDRESS']['HOST']
+    port = config['ADDRESS']['PORT']
+    uvicorn.run(app, host=host, port=int(port))
