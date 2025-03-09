@@ -27,18 +27,18 @@ def create_log_data(config: configparser, logger: logging.Logger, db_engine, met
     return log_entry
 
 
-def read_csv(config: configparser, logger: logging.Logger):
-    csv_path = Path(config['ENV']['CSV_PATH'])
-    logger.debug(f"CSV 파일 경로: {csv_path}")
-    if csv_path.exists():
-        try:
-            df = pd.read_csv(csv_path)
-            data = df.to_dict(orient="records")
-            logger.debug(f"데이터프레임 반환 완료: {data}")
-            return data
-        except Exception as e:
-            logger.warning("CSV 파일 읽기 실패:", e)
-            return []
-    else:
-        logger.warning("CSV 파일이 존재하지 않습니다.")
-        return []
+# def read_csv(config: configparser, logger: logging.Logger):
+#     csv_path = Path(config['ENV']['CSV_PATH'])
+#     logger.debug(f"CSV 파일 경로: {csv_path}")
+#     if csv_path.exists():
+#         try:
+#             df = pd.read_csv(csv_path)
+#             data = df.to_dict(orient="records")
+#             logger.debug(f"데이터프레임 반환 완료: {data}")
+#             return data
+#         except Exception as e:
+#             logger.warning("CSV 파일 읽기 실패:", e)
+#             return []
+#     else:
+#         logger.warning("CSV 파일이 존재하지 않습니다.")
+#         return []

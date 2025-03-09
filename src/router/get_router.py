@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
-from service import create_log_data, read_csv
+# from service import create_log_data, read_csv
+from service import create_log_data
 from database import read_db
 from utility import get_config, get_logger, get_db_engine
 
@@ -21,17 +22,11 @@ async def get_latest_work(request: Request, config = Depends(get_config), logger
     
     client_ip = request.client.host
     method = request.method
-    url = request.url
-    headers = request.headers
     user_agent = request.headers.get("user-agent", "Unknown")
 
     logger.info(f"메서드 요청 들어옴 : {method}")
     print(f"request: {request}")
     print(f"클라이언트 IP: {client_ip}")
-    print(f"요청 메서드: {method}")
-    print(f"요청 URL: {url}")
-    print(f"요청 헤더: {headers}")
-    print(f"요청 상태: {request.state}")
     print(f"User-Agent: {user_agent}")
     
    
@@ -45,17 +40,11 @@ async def get_latest_work(request: Request, config = Depends(get_config), logger
 async def get_work_process(request: Request, config = Depends(get_config), logger = Depends(get_logger), db_engine = Depends(get_db_engine)):
     client_ip = request.client.host
     method = request.method
-    url = request.url
-    headers = request.headers
     user_agent = request.headers.get("user-agent", "Unknown")
 
     logger.info(f"메서드 요청 들어옴 : {method}")
     print(f"request: {request}")
     print(f"클라이언트 IP: {client_ip}")
-    print(f"요청 메서드: {method}")
-    print(f"요청 URL: {url}")
-    print(f"요청 헤더: {headers}")
-    print(f"요청 상태: {request.state}")
     print(f"User-Agent: {user_agent}")
     
     body = await request.json()

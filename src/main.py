@@ -24,7 +24,7 @@ logger.info(f"config info : {log_path}")
 
 db_name = config['ENV']['DB_NAME']
 DATABASE_URL = f"sqlite:////mockapi/src/database/{db_name}"
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URL, echo=False)
 
 app.state.config = config
 app.state.logger = logger

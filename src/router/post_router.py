@@ -17,10 +17,6 @@ async def post_add_work(request: Request, config = Depends(get_config), logger =
     logger.info(f"메서드 요청 들어옴 : {method}")
     print(f"request: {request}")
     print(f"클라이언트 IP: {client_ip}")
-    print(f"요청 메서드: {method}")
-    print(f"요청 URL: {url}")
-    print(f"요청 헤더: {headers}")
-    print(f"요청 상태: {request.state}")
     print(f"User-Agent: {user_agent}")
 
     body = await request.json()
