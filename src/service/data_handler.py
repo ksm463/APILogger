@@ -3,7 +3,7 @@ import pandas as pd
 import arrow
 import configparser
 import logging
-from utility import APIRequest
+from apistruct import APIRequest
 from database import write_contents_to_db
 
 

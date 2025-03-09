@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
-from service import create_log_data
-from utility import get_config, get_logger, get_db_engine
+from service.data_handler import create_log_data
+from utility.request import get_config, get_logger, get_db_engine
 
 
 put_router = APIRouter()

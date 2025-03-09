@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 import pandas as pd
 import logging
-from utility import APIRequest
+from apistruct import APIRequest
 
 
 # # csv파일에서 index 번호를 읽어내는 함수. 추후 Db구현시 제거
@@ -37,14 +37,13 @@ from utility import APIRequest
 #     return log_entry
 
 def write_contents_to_db(logger: logging.Logger, db_engine, log_entry: APIRequest) -> APIRequest:
-    # APIRequest의 dict() 결과가 모델 필드와 일치한다고 가정합니다.
     log_data = log_entry.dict()
     api_request_log = APIRequest(**log_data)
     
     with Session(db_engine) as session:
         session.add(api_request_log)
         session.commit()
-        session.refresh(api_request_log)  # 저장된 후 자동 생성된 id를 가져옵니다.
+        session.refresh(api_request_log)
         logger.info(f"새 인덱스 번호 부여: {api_request_log.id}")
         
     return api_request_log
