@@ -37,7 +37,7 @@ from apistruct import APIRequest
 #     return log_entry
 
 def write_contents_to_db(logger: logging.Logger, db_engine, log_entry: APIRequest) -> APIRequest:
-    log_data = log_entry.dict()
+    log_data = log_entry.model_dump()
     api_request_log = APIRequest(**log_data)
     
     with Session(db_engine) as session:

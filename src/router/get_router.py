@@ -29,7 +29,6 @@ async def get_latest_work(request: Request, config = Depends(get_config), logger
     print(f"클라이언트 IP: {client_ip}")
     print(f"User-Agent: {user_agent}")
     
-   
     # log_data = read_csv(config, logger)
     log_data = read_db(logger, db_engine)
 

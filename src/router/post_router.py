@@ -10,8 +10,6 @@ post_router = APIRouter()
 async def post_add_work(request: Request, config = Depends(get_config), logger = Depends(get_logger), db_engine = Depends(get_db_engine)):
     client_ip = request.client.host
     method = request.method
-    url = request.url
-    headers = request.headers
     user_agent = request.headers.get("user-agent", "Unknown")
 
     logger.info(f"메서드 요청 들어옴 : {method}")
