@@ -4,6 +4,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Seoul
 
 COPY . /mockapi/
+WORKDIR /mockapi
 
 RUN apt-get update && apt-get -y upgrade && \
     apt-get install -y software-properties-common && \
@@ -17,4 +18,4 @@ RUN apt-get update && apt-get -y upgrade && \
 
 RUN ln -s $(which python3) /usr/bin/python
 RUN bash /mockapi/setting-scripts/install_dependencies.sh
-RUN bash /mockapi/setting-scripts/install_pip.sh
+RUN pip install --no-cache-dir -r /mockapi/setting-scripts/requirements.txt
