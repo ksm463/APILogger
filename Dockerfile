@@ -14,8 +14,8 @@ RUN apt-get update && apt-get -y upgrade && \
     apt-get update && \
     apt-get install -y python3.10 python3.10-dev python3.10-distutils && \
     apt-get install -y python3-pip && \
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1    
 
 RUN ln -s $(which python3) /usr/bin/python
 RUN bash /mockapi/setting-scripts/install_dependencies.sh
-RUN pip install --no-cache-dir -r /mockapi/setting-scripts/requirements.txt
+RUN pip install --no-cache-dir --no-deps -r /mockapi/setting-scripts/requirements.txt
