@@ -55,7 +55,7 @@ def read_db(logger: logging.Logger, db_engine):
             results = session.exec(statement).all()
             data = []
             for record in results:
-                rec_dict = record.dict(by_alias=True)
+                rec_dict = record.model_dump(by_alias=True)
                 if isinstance(rec_dict["time"], datetime):
                     rec_dict["time"] = rec_dict["time"].strftime("%Y-%m-%d %H:%M:%S")
                 data.append(rec_dict)
