@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlmodel import SQLModel, create_engine
 import uvicorn
 import configparser
+from pathlib import Path
 from router import get_router, post_router, put_router, delete_router
 from utility import setup_logger
 
@@ -19,11 +20,11 @@ log_path = config['ENV']['LOG_PATH']
 logger = setup_logger(log_path)
 logger.info("Logging server started")
 logger.info(f"config info : {log_path}")
-# config에 들어온 값에 대한 로깅 필요(dict)
-# 로그 파일 로테이션 필요
 
 db_name = config['ENV']['DB_NAME']
-DATABASE_URL = f"sqlite:////mockapi/src/database/{db_name}"
+db_dir = Path(__file__).parent / "database"
+db_file_path = db_dir / db_name
+DATABASE_URL = f"sqlite:///{db_file_path}"
 db_engine = create_engine(DATABASE_URL, echo=False)
 
 app.state.config = config
