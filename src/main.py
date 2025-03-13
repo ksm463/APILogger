@@ -3,12 +3,20 @@ from fastapi.staticfiles import StaticFiles
 from sqlmodel import SQLModel, create_engine
 import uvicorn
 import configparser
+from contextlib import asynccontextmanager
 from pathlib import Path
 from router import get_router, post_router, put_router, delete_router
 from utility import setup_logger
 
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_db()
+    yield
+app = FastAPI(lifespan=lifespan)
+
+
+# app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="/mockapi/src/web/static"), name="static")
 
@@ -25,6 +33,7 @@ db_name = config['ENV']['DB_NAME']
 db_dir = Path(__file__).parent / "database"
 db_file_path = db_dir / db_name
 DATABASE_URL = f"sqlite:///{db_file_path}"
+logger.info(f"DB info : {db_file_path}")
 db_engine = create_engine(DATABASE_URL, echo=False)
 
 app.state.config = config
@@ -39,9 +48,9 @@ app.include_router(delete_router)
 def create_db():
     SQLModel.metadata.create_all(db_engine)
 
-@app.on_event("startup")
-def on_startup():
-    create_db()
+# @app.on_event("startup")
+# def on_startup():
+#     create_db()
 
 
 if __name__== "__main__":
