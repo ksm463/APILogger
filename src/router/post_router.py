@@ -12,10 +12,7 @@ async def post_add_work(request: Request, config = Depends(get_config), logger =
     method = request.method
     user_agent = request.headers.get("user-agent", "Unknown")
 
-    logger.info(f"메서드 요청 들어옴 : {method}")
-    print(f"request: {request}")
-    print(f"클라이언트 IP: {client_ip}")
-    print(f"User-Agent: {user_agent}")
+    logger.info(f"메서드 요청 들어옴 : {method}, {user_agent}, {client_ip}")
 
     body = await request.json()
     print(f"받은 요청: {body}")

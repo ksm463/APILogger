@@ -1,7 +1,5 @@
 from sqlmodel import Session, select
 from datetime import datetime
-from pathlib import Path
-import pandas as pd
 import logging
 from apistruct import APIRequest
 

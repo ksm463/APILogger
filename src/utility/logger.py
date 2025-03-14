@@ -7,7 +7,7 @@ def setup_logger(log_path, logger_name=__name__) -> logging.Logger:
         logging.root.removeHandler(handler)
 
     logger = logging.getLogger(logger_name)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     rotating_handler = RotatingFileHandler(
         log_path, maxBytes=30 * 1024 * 1024, backupCount=5, encoding='utf-8'

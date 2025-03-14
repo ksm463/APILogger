@@ -5,7 +5,7 @@ import uvicorn
 import configparser
 from contextlib import asynccontextmanager
 from pathlib import Path
-from router import get_router, post_router, put_router, delete_router
+from router import get_router, post_router, put_router, delete_router, send_router
 from utility import setup_logger
 
 
@@ -15,8 +15,6 @@ async def lifespan(app: FastAPI):
     yield
 app = FastAPI(lifespan=lifespan)
 
-
-# app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="/mockapi/src/web/static"), name="static")
 
@@ -44,6 +42,7 @@ app.include_router(get_router)
 app.include_router(post_router)
 app.include_router(put_router)
 app.include_router(delete_router)
+app.include_router(send_router)
 
 def create_db():
     SQLModel.metadata.create_all(db_engine)

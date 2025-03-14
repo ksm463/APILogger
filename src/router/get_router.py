@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends, HTTPException, Query
+from fastapi import APIRouter, Request, Depends, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from typing import Optional
@@ -25,10 +25,7 @@ async def get_latest_work(request: Request, logger = Depends(get_logger), db_eng
     method = request.method
     user_agent = request.headers.get("user-agent", "Unknown")
 
-    logger.info(f"메서드 요청 들어옴 : {method}")
-    print(f"request: {request}")
-    print(f"클라이언트 IP: {client_ip}")
-    print(f"User-Agent: {user_agent}")
+    logger.info(f"메서드 요청 들어옴 : {method}, {user_agent}, {client_ip}")
 
     log_data = read_db(logger, db_engine)
 
@@ -49,10 +46,7 @@ async def get_work_process(
     method = request.method
     user_agent = request.headers.get("user-agent", "Unknown")
 
-    logger.info(f"메서드 요청 들어옴 : {method}")
-    print(f"request: {request}")
-    print(f"클라이언트 IP: {client_ip}")
-    print(f"User-Agent: {user_agent}")
+    logger.info(f"메서드 요청 들어옴 : {method}, {user_agent}, {client_ip}")
     
     body = {}
 
