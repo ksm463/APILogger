@@ -3,66 +3,91 @@
 <head>
   <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
   <meta charset="UTF-8" />
-  <title>REST API 테스트 페이지</title>
+  <title>API 정보 입력 페이지</title>
+  <style>
+    .container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px; /* 버튼 그룹 상단 여백 추가 */
+    }
+    .input-group {
+      margin-bottom: 10px;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .input-group input[type="text"],
+    .input-group textarea {
+      width: 300px;
+    }
+    .input-group textarea {
+      height: 100px;
+    }
+    #sendBtn {
+      padding: 10px 20px; /* 버튼 패딩 조정 */
+      font-size: 16px; /* 버튼 폰트 크기 조정 */
+      background-color: #007bff; /* 버튼 색상 변경 */
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #sendBtn:hover {
+      background-color: #0056b3; /* 호버 시 버튼 색상 변경 */
+    }
+  </style>
 </head>
 <body>
-  <h1>REST API 테스트</h1>
+  <h1>API 정보 입력 페이지</h1>
 
-  <!-- IP 주소(엔드포인트) 입력 -->
-  <label for="ip">IP (엔드포인트 주소):</label><br />
-  <input type="text" id="ip" placeholder="예: http://localhost:3000/api" style="width: 300px;" />
-  <br /><br />
+  <div class="input-group">
+    <label for="ip">IP (엔드포인트 주소):</label>
+    <input type="text" id="ip" placeholder="예: http://127.0.0.1:3000/list" />
+  </div>
+  
+  <div class="input-group">
+    <label for="method">method:</label>
+    <input type="text" id="method" placeholder="예: GET, POST, PUT, DELETE" />
+  </div>
 
-  <!-- HTTP 메서드 입력 -->
-  <label for="method">method:</label><br />
-  <input type="text" id="method" placeholder="예: GET, POST, PUT, DELETE" style="width: 300px;" />
-  <br /><br />
+  <div class="input-group">
+    <label for="content">content:</label>
+    <textarea id="content" placeholder="본문 내용을 JSON 또는 일반 텍스트로 입력"></textarea>
+  </div>
 
-  <!-- 쿼리 파라미터 입력 -->
-  <label for="query">query:</label><br />
-  <input type="text" id="query" placeholder="예: ?key=value" style="width: 300px;" />
-  <br /><br />
+  <div class="input-group">
+    <label for="jsonFile">JSON 파일 업로드:</label>
+    <input type="file" id="jsonFile" accept="application/json" />
+  </div>
 
-  <!-- Content 영역 -->
-  <label for="content">content:</label><br />
-  <textarea id="content" placeholder="본문 내용을 JSON 또는 일반 텍스트로 입력" style="width: 300px; height: 100px;"></textarea>
-  <br /><br />
-
-  <!-- JSON 파일 업로드 -->
-  <label for="jsonFile">JSON 파일 업로드:</label><br />
-  <input type="file" id="jsonFile" accept="application/json" />
-  <br /><br />
-
-  <!-- 버튼들 -->
-  <button id="repeatBtn">반복</button>
-  <button id="sendBtn">전송</button>
+  <div class="container">
+    <div class="input-group">
+      <label for="repeatCount">반복 횟수:</label>
+      <input type="number" id="repeatCount" value="1" min="1" style="width: 80px;" />
+    </div>
+    <button id="sendBtn">전송</button>
+  </div>
+  <br>
 
   <script>
-    // 반복 호출할 때 필요한 횟수나 로직이 있다면 활용할 수 있도록 변수를 선언
-    let repeatCount = 0;
-
     // '전송' 버튼 클릭 시 동작
     document.getElementById('sendBtn').addEventListener('click', () => {
-      sendRequest();
-    });
-
-    // '반복' 버튼 클릭 시 동작 (원하는 로직으로 반복 횟수 등을 변경)
-    document.getElementById('repeatBtn').addEventListener('click', () => {
-      repeatCount = prompt("몇 번 반복할까요?", "3");
-      if (repeatCount !== null) {
-        for (let i = 0; i < repeatCount; i++) {
-          sendRequest();
-        }
+      const repeatCount = parseInt(document.getElementById('repeatCount').value);
+      if (isNaN(repeatCount) || repeatCount < 1) {
+        alert("반복 횟수는 1 이상의 숫자여야 합니다.");
+        return;
+      }
+      for (let i = 0; i < repeatCount; i++) {
+        sendRequest();
       }
     });
 
     function sendRequest() {
       const ip = document.getElementById('ip').value.trim();
       const method = document.getElementById('method').value.trim().toUpperCase();
-      const query = document.getElementById('query').value.trim();
       const content = document.getElementById('content').value;
-
-      // 파일 객체 획득
       const fileInput = document.getElementById('jsonFile');
       const file = fileInput.files[0];
 
@@ -80,7 +105,7 @@
     }
 
     function makeFetchRequest(ip, method, query, bodyData) {
-      const url = ip + query; // 엔드포인트 + 쿼리
+      const url = ip;
 
       fetch(url, {
         method: method,
