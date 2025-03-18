@@ -41,89 +41,73 @@
 </head>
 <body>
   <h1>API 정보 입력 페이지</h1>
-
-  <div class="input-group">
-    <label for="ip">IP (엔드포인트 주소):</label>
-    <input type="text" id="ip" placeholder="예: http://127.0.0.1:3000/list" />
-  </div>
-  
-  <div class="input-group">
-    <label for="method">method:</label>
-    <input type="text" id="method" placeholder="예: GET, POST, PUT, DELETE" />
-  </div>
-
-  <div class="input-group">
-    <label for="content">content:</label>
-    <textarea id="content" placeholder="본문 내용을 JSON 또는 일반 텍스트로 입력"></textarea>
-  </div>
-
-  <div class="input-group">
-    <label for="jsonFile">JSON 파일 업로드:</label>
-    <input type="file" id="jsonFile" accept="application/json" />
-  </div>
-
-  <div class="container">
+  <form id="apiForm" action="http://127.0.0.1:18000/send" method="POST">
     <div class="input-group">
-      <label for="repeatCount">반복 횟수:</label>
-      <input type="number" id="repeatCount" value="1" min="1" style="width: 80px;" />
+      <label for="ip">IP (엔드포인트 주소):</label>
+      <input type="text" id="ip" name="ip" placeholder="예: http://127.0.0.1:3000/list" />
     </div>
-    <button id="sendBtn">전송</button>
-  </div>
+    
+    <div class="input-group">
+      <label for="method">method:</label>
+      <input type="text" id="method" name="method" placeholder="예: GET, POST, PUT, DELETE" />
+    </div>
+
+    <div class="input-group">
+      <label for="content">content:</label>
+      <textarea id="content" name="content" placeholder="본문 내용을 JSON 또는 일반 텍스트로 입력"></textarea>
+    </div>
+
+    <div class="input-group">
+      <label for="jsonFile">JSON 파일 업로드:</label>
+      <input type="file" id="jsonFile" name="jsonFile" accept="application/json" />
+    </div>
+
+    <div class="container">
+      <div class="input-group">
+        <label for="repeatCount">반복 횟수:</label>
+        <input type="number" id="repeatCount" name="repeatCount" value="1" min="1" style="width: 80px;" />
+      </div>
+      <button id="sendBtn" type="submit">전송</button>
+    </div>
+  </form>
+  
   <br>
 
-  <script>
-    // '전송' 버튼 클릭 시 동작
-    document.getElementById('sendBtn').addEventListener('click', () => {
-      const repeatCount = parseInt(document.getElementById('repeatCount').value);
-      if (isNaN(repeatCount) || repeatCount < 1) {
-        alert("반복 횟수는 1 이상의 숫자여야 합니다.");
-        return;
-      }
-      for (let i = 0; i < repeatCount; i++) {
-        sendRequest();
-      }
-    });
+<script>
+  document.getElementById('apiForm').addEventListener('submit', async (event) => {
+    event.preventDefault(); // 기본 제출 동작 방지
 
-    function sendRequest() {
-      const ip = document.getElementById('ip').value.trim();
-      const method = document.getElementById('method').value.trim().toUpperCase();
-      const content = document.getElementById('content').value;
-      const fileInput = document.getElementById('jsonFile');
-      const file = fileInput.files[0];
+    const form = event.target;
+    const formData = new FormData(form);
+    const httpMethod = form.getAttribute('method');
+    const repeatCount = parseInt(formData.get('repeatCount'));
 
-      // 파일이 있으면 읽고, 없으면 입력한 content를 그대로 요청에 활용
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          const fileContent = event.target.result;
-          makeFetchRequest(ip, method, query, fileContent);
-        };
-        reader.readAsText(file);
-      } else {
-        makeFetchRequest(ip, method, query, content);
-      }
+    if (isNaN(repeatCount) || repeatCount < 1) {
+      alert("반복 횟수는 1 이상의 숫자여야 합니다.");
+      return;
     }
 
-    function makeFetchRequest(ip, method, query, bodyData) {
-      const url = ip;
+    for (let i = 0; i < repeatCount; i++) {
+      try {
+        const response = await fetch(form.action, {
+          method: httpMethod,
+          body: formData,
+        });
 
-      fetch(url, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: (method !== 'GET' && method !== 'HEAD') ? bodyData : null
-      })
-      .then(response => response.json().catch(() => response.text()))
-      .then(data => {
-        console.log("서버 응답:", data);
-        alert("서버 응답 확인: 콘솔창을 확인하세요.");
-      })
-      .catch(error => {
-        console.error("에러 발생:", error);
-        alert("요청 중 에러가 발생했습니다. 콘솔창을 확인하세요.");
-      });
+        if (!response.ok) {
+          const errorData = await response.json();
+          alert(`요청 실패: ${response.status} - ${JSON.stringify(errorData)}`);
+          return;
+        }
+
+        const data = await response.json();
+        alert(`요청 성공: ${JSON.stringify(data)}`);
+      } catch (error) {
+        console.error('요청 중 오류 발생:', error);
+        alert('요청 중 오류가 발생했습니다.');
+      }
     }
-  </script>
+  });
+</script>
 </body>
 </html>
