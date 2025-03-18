@@ -5,7 +5,7 @@ import uvicorn
 import configparser
 from contextlib import asynccontextmanager
 from pathlib import Path
-from router import get_router, post_router, put_router, delete_router, send_router
+from router import api_client, get_router, post_router, put_router, delete_router
 from utility import setup_logger
 
 
@@ -42,7 +42,7 @@ app.include_router(get_router)
 app.include_router(post_router)
 app.include_router(put_router)
 app.include_router(delete_router)
-app.include_router(send_router)
+app.include_router(api_client)
 
 def create_db():
     SQLModel.metadata.create_all(db_engine)

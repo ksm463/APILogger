@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+  <meta charset="UTF-8" />
+  <title>REST API 테스트 페이지</title>
+</head>
+<body>
+  <h1>REST API 테스트</h1>
+
+  <!-- IP 주소(엔드포인트) 입력 -->
+  <label for="ip">IP (엔드포인트 주소):</label><br />
+  <input type="text" id="ip" placeholder="예: http://localhost:3000/api" style="width: 300px;" />
+  <br /><br />
+
+  <!-- HTTP 메서드 입력 -->
+  <label for="method">method:</label><br />
+  <input type="text" id="method" placeholder="예: GET, POST, PUT, DELETE" style="width: 300px;" />
+  <br /><br />
+
+  <!-- 쿼리 파라미터 입력 -->
+  <label for="query">query:</label><br />
+  <input type="text" id="query" placeholder="예: ?key=value" style="width: 300px;" />
+  <br /><br />
+
+  <!-- Content 영역 -->
+  <label for="content">content:</label><br />
+  <textarea id="content" placeholder="본문 내용을 JSON 또는 일반 텍스트로 입력" style="width: 300px; height: 100px;"></textarea>
+  <br /><br />
+
+  <!-- JSON 파일 업로드 -->
+  <label for="jsonFile">JSON 파일 업로드:</label><br />
+  <input type="file" id="jsonFile" accept="application/json" />
+  <br /><br />
+
+  <!-- 버튼들 -->
+  <button id="repeatBtn">반복</button>
+  <button id="sendBtn">전송</button>
+
+  <script>
+    // 반복 호출할 때 필요한 횟수나 로직이 있다면 활용할 수 있도록 변수를 선언
+    let repeatCount = 0;
+
+    // '전송' 버튼 클릭 시 동작
+    document.getElementById('sendBtn').addEventListener('click', () => {
+      sendRequest();
+    });
+
+    // '반복' 버튼 클릭 시 동작 (원하는 로직으로 반복 횟수 등을 변경)
+    document.getElementById('repeatBtn').addEventListener('click', () => {
+      repeatCount = prompt("몇 번 반복할까요?", "3");
+      if (repeatCount !== null) {
+        for (let i = 0; i < repeatCount; i++) {
+          sendRequest();
+        }
+      }
+    });
+
+    function sendRequest() {
+      const ip = document.getElementById('ip').value.trim();
+      const method = document.getElementById('method').value.trim().toUpperCase();
+      const query = document.getElementById('query').value.trim();
+      const content = document.getElementById('content').value;
+
+      // 파일 객체 획득
+      const fileInput = document.getElementById('jsonFile');
+      const file = fileInput.files[0];
+
+      // 파일이 있으면 읽고, 없으면 입력한 content를 그대로 요청에 활용
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const fileContent = event.target.result;
+          makeFetchRequest(ip, method, query, fileContent);
+        };
+        reader.readAsText(file);
+      } else {
+        makeFetchRequest(ip, method, query, content);
+      }
+    }
+
+    function makeFetchRequest(ip, method, query, bodyData) {
+      const url = ip + query; // 엔드포인트 + 쿼리
+
+      fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: (method !== 'GET' && method !== 'HEAD') ? bodyData : null
+      })
+      .then(response => response.json().catch(() => response.text()))
+      .then(data => {
+        console.log("서버 응답:", data);
+        alert("서버 응답 확인: 콘솔창을 확인하세요.");
+      })
+      .catch(error => {
+        console.error("에러 발생:", error);
+        alert("요청 중 에러가 발생했습니다. 콘솔창을 확인하세요.");
+      });
+    }
+  </script>
+</body>
+</html>
