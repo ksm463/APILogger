@@ -1,4 +1,5 @@
 from sqlmodel import Session, select
+from sqlalchemy import desc
 from datetime import datetime
 import logging
 from apistruct import APIRequest
@@ -19,7 +20,11 @@ def write_contents_to_db(logger: logging.Logger, db_engine, log_entry: APIReques
 def read_db(logger: logging.Logger, db_engine):
     try:
         with Session(db_engine) as session:
-            statement = select(APIRequest)
+            statement = (
+                select(APIRequest)
+                .order_by(desc(APIRequest.id))
+                .limit(10)
+            )
             results = session.exec(statement).all()
             data = []
             for record in results:

@@ -1,6 +1,5 @@
-import aiohttp
 import json
-from fastapi import APIRouter, Request, Depends, HTTPException, Form
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 from service.data_handler import create_log_data
 from utility.request import get_config, get_logger, get_db_engine
@@ -25,19 +24,12 @@ async def send_api_request(
             json_data = await request.json()
             log_content = json.dumps(json_data, ensure_ascii=False)
             
-            if isinstance(json_data, list):
-                content_val = log_content
-            elif isinstance(json_data, dict):
-                content_val = json_data.get("content", "")
-            else:
-                content_val = ""
-            
         else:
             form = await request.form()
-            ip = form.get("ip")
+            ip = request.client.host
+            # ip = form.get("ip")
             method_val = form.get("method")
-            content_val = form.get("content", "")
-            log_content = content_val
+            log_content = form.get("content", "")
         
         # 필수 필드 검증
         if not ip or not method_val:
