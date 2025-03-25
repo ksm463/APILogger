@@ -70,29 +70,22 @@ async def catch_all(
     db_engine=Depends(get_db_engine),
 ):
     """
-    Catch-all API endpoint to handle any request.
+    특별히 설정하지 않은 모든 요청을 받아오는 Catch-all API
     """
     client_ip = request.client.host
     method = request.method
     user_agent = request.headers.get("user-agent", "Unknown")
-    headers = dict(request.headers)
     
     logger.info(f"Catch-all 메서드 요청 들어옴 : {method}, {client_ip}, path: /{path}")
 
     try:
         body = await request.json()
+        log_content = body.get("content", "")
     except json.JSONDecodeError:
-        body = {}
-        
-    if isinstance(body, dict) and "content" in body:
-        log_content = body["content"]
-    else:
-        log_content = "input test"
+        log_content = ""
 
-
-    # 목표 서버 IP를 config에서 가져옴
     server_ip = config["ADDRESS"]["SERVER_IP_ADDRESS"]
-    target_url = f"http://{server_ip}/{path}"  # 필요시 "http://" 접두어를 추가하세요.
+    target_url = f"http://{server_ip}/{path}"
 
     # httpx를 이용해 대상 서버에 요청 전송
     try:
@@ -102,11 +95,17 @@ async def catch_all(
         response_code = response.status_code
         error_message = None
         logger.info(f"서버 전송 성공: 응답코드 {response_code}")
+        try:
+            server_response_data = response.json()
+        except json.JSONDecodeError:
+            server_response_data = response.text
+
     except Exception as exc:
         send_status = "FAIL"
         response_code = None
         error_message = str(exc)
         logger.error(f"서버 전송 실패: {error_message}")
+        server_response_data = {"error": error_message}
     
     log_data = create_log_data(
         config, logger, db_engine,
@@ -117,4 +116,4 @@ async def catch_all(
         error_message=error_message
     )
     logger.info(f"최종 로그 기록 완료: {log_data.method}, 상태: {log_data.send_status}")
-    return JSONResponse(content=log_content)
+    return JSONResponse(content=server_response_data)
