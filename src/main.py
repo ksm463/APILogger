@@ -47,9 +47,6 @@ app.include_router(api_client)
 def create_db():
     SQLModel.metadata.create_all(db_engine)
 
-# @app.on_event("startup")
-# def on_startup():
-#     create_db()
 
 
 if __name__== "__main__":

@@ -26,22 +26,22 @@
       height: 100px;
     }
     #sendBtn {
-      padding: 10px 20px; /* 버튼 패딩 조정 */
-      font-size: 16px; /* 버튼 폰트 크기 조정 */
-      background-color: #007bff; /* 버튼 색상 변경 */
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
     }
     #sendBtn:hover {
-      background-color: #0056b3; /* 호버 시 버튼 색상 변경 */
+      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
   <h1>API 정보 입력 페이지</h1>
-  <form id="apiForm" action="http://127.0.0.1:18000/send" method="POST">
+  <form id="apiForm" method="POST">
     <div class="input-group">
       <label for="ip">IP (엔드포인트 주소):</label>
       <input type="text" id="ip" name="ip" placeholder="예: http://127.0.0.1:3000/list" />
@@ -73,41 +73,66 @@
   
   <br>
 
-<script>
-  document.getElementById('apiForm').addEventListener('submit', async (event) => {
-    event.preventDefault(); // 기본 제출 동작 방지
-
-    const form = event.target;
-    const formData = new FormData(form);
-    const httpMethod = form.getAttribute('method');
-    const repeatCount = parseInt(formData.get('repeatCount'));
-
-    if (isNaN(repeatCount) || repeatCount < 1) {
-      alert("반복 횟수는 1 이상의 숫자여야 합니다.");
-      return;
-    }
-
-    for (let i = 0; i < repeatCount; i++) {
-      try {
-        const response = await fetch(form.action, {
-          method: httpMethod,
-          body: formData,
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          alert(`요청 실패: ${response.status} - ${JSON.stringify(errorData)}`);
-          return;
+  <script>
+    document.getElementById('apiForm').addEventListener('submit', async (event) => {
+      event.preventDefault(); // 기본 제출 동작 방지
+  
+      const form = event.target;
+      const ipValue = document.getElementById('ip').value.trim();
+      if (!ipValue) {
+        alert("엔드포인트 주소를 입력해 주세요.");
+        return;
+      }
+      const actionUrl = ipValue;
+      const formData = new FormData(form);
+      const httpMethod = form.getAttribute('method');
+      const repeatCount = parseInt(formData.get('repeatCount'));
+  
+      if (isNaN(repeatCount) || repeatCount < 1) {
+        alert("반복 횟수는 1 이상의 숫자여야 합니다.");
+        return;
+      }
+  
+      // jsonFile 필드에 업로드된 파일이 있는지 확인
+      const fileInput = document.getElementById('jsonFile');
+      if (fileInput.files && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          const fileContent = e.target.result;
+          // 파일 내용으로 'content' 필드 업데이트
+          formData.set('content', fileContent);
+          await sendRequests(form.action, httpMethod, formData, repeatCount);
+        };
+        reader.readAsText(file);
+      } else {
+        // 파일이 없으면 기존 formData 그대로 사용
+        await sendRequests(actionUrl, httpMethod, formData, repeatCount);
+      }
+    });
+  
+    async function sendRequests(actionUrl, method, formData, repeatCount) {
+      for (let i = 0; i < repeatCount; i++) {
+        try {
+          const response = await fetch(actionUrl, {
+            method: method,
+            body: formData,
+          });
+  
+          if (!response.ok) {
+            const errorData = await response.json();
+            alert(`요청 실패: ${response.status} - ${JSON.stringify(errorData)}`);
+            return;
+          }
+  
+          const data = await response.json();
+          console.log(`요청 성공: ${JSON.stringify(data)}`);
+        } catch (error) {
+          console.error('요청 중 오류 발생:', error);
+          alert('요청 중 오류가 발생했습니다.');
         }
-
-        const data = await response.json();
-        console.log(`요청 성공: ${JSON.stringify(data)}`);
-      } catch (error) {
-        console.error('요청 중 오류 발생:', error);
-        alert('요청 중 오류가 발생했습니다.');
       }
     }
-  });
-</script>
+  </script>
 </body>
 </html>
