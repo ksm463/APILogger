@@ -1,5 +1,6 @@
 import aiohttp
 import json
+import httpx
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 from service.data_handler import create_log_data
@@ -76,28 +77,44 @@ async def catch_all(
     user_agent = request.headers.get("user-agent", "Unknown")
     headers = dict(request.headers)
     
-    logger.info(f"Catch-all 메서드 요청 들어옴 : {method}, {user_agent}, {client_ip}, path: /{path}")
+    logger.info(f"Catch-all 메서드 요청 들어옴 : {method}, {client_ip}, path: /{path}")
 
     try:
         body = await request.json()
     except json.JSONDecodeError:
         body = {}
+        
+    if isinstance(body, dict) and "content" in body:
+        log_content = body["content"]
+    else:
+        log_content = "input test"
 
-    query_params = dict(request.query_params)
 
-    request_info = {
-        "method": method,
-        "path": "/" + path,
-        "client_ip": client_ip,
-        "user_agent": user_agent,
-        "headers": headers,
-        "body": body,
-        "query_params": query_params,
-    }
+    # 목표 서버 IP를 config에서 가져옴
+    server_ip = config["ADDRESS"]["SERVER_IP_ADDRESS"]
+    target_url = f"http://{server_ip}/{path}"  # 필요시 "http://" 접두어를 추가하세요.
 
+    # httpx를 이용해 대상 서버에 요청 전송
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.request(method, target_url, json=log_content)
+        send_status = "SUCCESS"
+        response_code = response.status_code
+        error_message = None
+        logger.info(f"서버 전송 성공: 응답코드 {response_code}")
+    except Exception as exc:
+        send_status = "FAIL"
+        response_code = None
+        error_message = str(exc)
+        logger.error(f"서버 전송 실패: {error_message}")
+    
     log_data = create_log_data(
-        config, logger, db_engine, method, user_agent, client_ip, str(request_info)
+        config, logger, db_engine,
+        method, user_agent, client_ip,
+        log_content,
+        send_status=send_status,
+        response_code=response_code,
+        error_message=error_message
     )
-
-    logger.info(f"받은 요청: {log_data.method}")
-    return JSONResponse(content=request_info)
+    logger.info(f"최종 로그 기록 완료: {log_data.method}, 상태: {log_data.send_status}")
+    return JSONResponse(content=log_content)

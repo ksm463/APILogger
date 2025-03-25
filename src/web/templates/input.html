@@ -41,7 +41,7 @@
 </head>
 <body>
   <h1>API 정보 입력 페이지</h1>
-  <form id="apiForm" method="POST">
+  <form id="apiForm">
     <div class="input-group">
       <label for="ip">IP (엔드포인트 주소):</label>
       <input type="text" id="ip" name="ip" placeholder="예: http://127.0.0.1:3000/list" />
@@ -49,7 +49,12 @@
     
     <div class="input-group">
       <label for="method">method:</label>
-      <input type="text" id="method" name="method" placeholder="예: GET, POST, PUT, DELETE" />
+      <select id="method" name="method">
+        <option value="POST">POST</option>
+        <option value="GET">GET</option>
+        <option value="DELETE">DELETE</option>
+        <option value="PUT">PUT</option>
+      </select>
     </div>
 
     <div class="input-group">
@@ -85,7 +90,7 @@
       }
       const actionUrl = ipValue;
       const formData = new FormData(form);
-      const httpMethod = form.getAttribute('method');
+      const httpMethod = document.getElementById('method').value.trim();
       const repeatCount = parseInt(formData.get('repeatCount'));
   
       if (isNaN(repeatCount) || repeatCount < 1) {
