@@ -3,9 +3,6 @@ from fastapi.responses import JSONResponse
 import aiohttp
 import json
 import httpx
-import re
-import socket
-import os
 from urllib.parse import urlparse
 
 from service.data_handler import create_log_data
@@ -13,56 +10,6 @@ from utility.request import get_config, get_logger, get_db_engine
 import logging
 
 api_client = APIRouter()
-
-
-@api_client.post("/send")
-async def send_api_request(
-    request: Request,
-    config=Depends(get_config),
-    logger: logging.Logger = Depends(get_logger),
-    db_engine=Depends(get_db_engine),
-):
-    try:
-        content_type = request.headers.get("Content-Type", "")
-        if "application/json" in content_type:
-            client_ip = request.client.host
-            target_url = request.url
-            method_val = request.method
-            json_data = await request.json()
-            log_content = json.dumps(json_data, ensure_ascii=False)
-            
-        else:
-            form = await request.form()
-            client_ip = request.client.host
-            target_url = form.get("ip")
-            method_val = form.get("method")
-            json_data = form.get("content", "")
-            log_content = json_data
-
-        logger.info(f"[/send] 요청 시작: 클라이언트 IP - {client_ip}, 메서드 - {method_val}")
-
-        user_agent = request.headers.get("user-agent", "Unknown")
-
-        log_data = create_log_data(config, logger, db_engine, request.method, user_agent, client_ip, log_content)
-        print(f"받은 요청: {log_data.method}")
-
-        server_ip = config["ADDRESS"]["SERVER_IP_ADDRESS"]
-        headers = {"Content-Type": "application/json"}
-        async with aiohttp.ClientSession() as session:
-            logger.debug(f"[/sendexample] 서버로 POST 요청 전송 시도: URL - http://{server_ip}/testexample, 헤더 - {headers}, 데이터 - {log_content}")
-            async with session.post(
-                f"http://{server_ip}/testexample", headers=headers, json=json_data
-            ) as response:
-                if response.status >= 400:
-                    logger.error(f"요청 실패: 상태 코드 {response.status}, 응답 본문: {await response.text()}")
-                    return JSONResponse(content={"error": f"서버 응답 오류 {response.status}"}, status_code=response.status)
-
-                response_data = await response.json()
-                logger.info(f"[/sendexample] 응답 수신 성공: 상태 코드 - {response.status}, 응답 데이터 - {response_data}")
-                return JSONResponse(content=response_data, status_code=response.status)
-    except Exception as e:
-        logger.exception(f"예외 발생: {e}")
-        return JSONResponse(content="서버 내부 오류", status_code=500)
 
 
 async def handle_json_data(request: Request) -> dict:
@@ -97,31 +44,6 @@ async def handle_form_data(request: Request) -> dict:
         "log_content": log_content
     }
 
-async def is_default_target(target_url: str, local_ip: str, local_port: str) -> bool:
-    """
-    target_url에서 IP와 포트 정보를 추출하여, 예상되는 IP와 포트와 일치하는지 확인합니다.
-    target_url이 비어 있으면 기본값 사용으로 간주하여 True를 반환합니다.
-    """
-    print(f"target url:{target_url}")
-    if not target_url:
-        return True
-    parsed_url = urlparse(target_url)
-    target_address = parsed_url.netloc
-    pattern = r"^(?P<ip>\d{1,3}(?:\.\d{1,3}){3})(?::(?P<port>\d+))?$"
-    match = re.match(pattern, target_address)
-    if not match:
-        return False
-    else:
-        target_ip = match.group("ip")
-        target_port = match.group("port")
-        
-        current_ip = local_ip
-        current_port = local_port
-        print(f"current_ip:{current_ip}")
-        print(f"current_port:{current_port}")
-
-        return target_ip == current_ip and target_port == current_port
-
 
 @api_client.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def catch_all(
@@ -146,15 +68,15 @@ async def catch_all(
     json_data = data["json_data"]
     log_content = data["log_content"]
     
-    logger.info(f"[/send] 요청 시작: 클라이언트 IP - {client_ip}, 메서드 - {method}")
+    logger.info(f"요청 시작: 클라이언트 IP - {client_ip}, 메서드 - {method}")
     user_agent = request.headers.get("user-agent", "Unknown")
 
-    local_ip = config["ADDRESS"]["LOCAL_IP"]
-    local_port = config["ADDRESS"]["LOCAL_PORT"]
-    if await is_default_target(target_url, local_ip, local_port):
+    local_address = config["ADDRESS"]["LOCAL_IP_ADDRESS"]
+    parsed_url = urlparse(target_url)
+    target_address = parsed_url.netloc
+    if target_address == local_address:
         server_ip = config["ADDRESS"]["SERVER_IP_ADDRESS"]
         target_url = f"http://{server_ip}/{path}"
-    # target_url = request.url
 
     print(f"content:{log_content}")
 
