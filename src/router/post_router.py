@@ -15,10 +15,10 @@ async def post_add_work(request: Request, config = Depends(get_config), logger =
     logger.info(f"메서드 요청 들어옴 : {method}, {user_agent}, {client_ip}")
 
     body = await request.json()
-    print(f"받은 요청: {body}")
+    print(f"받은 내용: {body}")
     
     log_data = create_log_data(config, logger, db_engine, method, user_agent, client_ip, str(body))
-    print(f"받은 요청: {log_data.method}")
+    print(f"요청 메서드: {log_data.method}")
 
     message = "work added to AI server Successfully."
 

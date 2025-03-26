@@ -1,11 +1,15 @@
+from fastapi import APIRouter, Request, Depends
+from fastapi.responses import JSONResponse
 import aiohttp
 import json
 import httpx
-from fastapi import APIRouter, Request, Depends
-from fastapi.responses import JSONResponse
+import re
+import socket
+import os
+from urllib.parse import urlparse
+
 from service.data_handler import create_log_data
 from utility.request import get_config, get_logger, get_db_engine
-from pathlib import Path
 import logging
 
 api_client = APIRouter()
@@ -93,6 +97,31 @@ async def handle_form_data(request: Request) -> dict:
         "log_content": log_content
     }
 
+async def is_default_target(target_url: str, local_ip: str, local_port: str) -> bool:
+    """
+    target_url에서 IP와 포트 정보를 추출하여, 예상되는 IP와 포트와 일치하는지 확인합니다.
+    target_url이 비어 있으면 기본값 사용으로 간주하여 True를 반환합니다.
+    """
+    print(f"target url:{target_url}")
+    if not target_url:
+        return True
+    parsed_url = urlparse(target_url)
+    target_address = parsed_url.netloc
+    pattern = r"^(?P<ip>\d{1,3}(?:\.\d{1,3}){3})(?::(?P<port>\d+))?$"
+    match = re.match(pattern, target_address)
+    if not match:
+        return False
+    else:
+        target_ip = match.group("ip")
+        target_port = match.group("port")
+        
+        current_ip = local_ip
+        current_port = local_port
+        print(f"current_ip:{current_ip}")
+        print(f"current_port:{current_port}")
+
+        return target_ip == current_ip and target_port == current_port
+
 
 @api_client.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def catch_all(
@@ -120,12 +149,14 @@ async def catch_all(
     logger.info(f"[/send] 요청 시작: 클라이언트 IP - {client_ip}, 메서드 - {method}")
     user_agent = request.headers.get("user-agent", "Unknown")
 
-    if not target_url:
+    local_ip = config["ADDRESS"]["LOCAL_IP"]
+    local_port = config["ADDRESS"]["LOCAL_PORT"]
+    if await is_default_target(target_url, local_ip, local_port):
         server_ip = config["ADDRESS"]["SERVER_IP_ADDRESS"]
         target_url = f"http://{server_ip}/{path}"
     # target_url = request.url
-    print(f"target url:{target_url}")
-    print(log_content)
+
+    print(f"content:{log_content}")
 
     # httpx를 이용해 대상 서버에 요청 전송
     try:
