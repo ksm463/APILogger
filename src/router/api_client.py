@@ -61,6 +61,39 @@ async def send_api_request(
         return JSONResponse(content="서버 내부 오류", status_code=500)
 
 
+async def handle_json_data(request: Request) -> dict:
+    try:
+        json_data = await request.json()
+    except json.JSONDecodeError:
+        json_data = {}
+    client_ip = request.client.host
+    target_url = str(request.url)
+    method = request.method
+    log_content = json.dumps(json_data, ensure_ascii=False)
+    return {
+        "client_ip": client_ip,
+        "target_url": target_url,
+        "method": method,
+        "json_data": json_data,
+        "log_content": log_content
+    }
+
+async def handle_form_data(request: Request) -> dict:
+    form = await request.form()
+    client_ip = request.client.host
+    target_url = form.get("ip", "")
+    method = form.get("method", request.method)
+    json_data = form.get("content", "")
+    log_content = json_data
+    return {
+        "client_ip": client_ip,
+        "target_url": target_url,
+        "method": method,
+        "json_data": json_data,
+        "log_content": log_content
+    }
+
+
 @api_client.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def catch_all(
     request: Request,
@@ -70,27 +103,38 @@ async def catch_all(
     db_engine=Depends(get_db_engine),
 ):
     """
-    특별히 설정하지 않은 모든 요청을 받아오는 Catch-all API
+    특별히 엔드포인트를 설정하지 않은 모든 요청을 받아오는 Catch-all API
     """
-    client_ip = request.client.host
-    method = request.method
-    user_agent = request.headers.get("user-agent", "Unknown")
+    content_type = request.headers.get("Content-Type", "")
+    if "application/json" in content_type:
+        data = await handle_json_data(request)
+    else:
+        data = await handle_form_data(request)
     
-    logger.info(f"Catch-all 메서드 요청 들어옴 : {method}, {client_ip}, path: /{path}")
+    client_ip = data["client_ip"]
+    target_url = data["target_url"]
+    method = data["method"]
+    json_data = data["json_data"]
+    log_content = data["log_content"]
+    
+    logger.info(f"[/send] 요청 시작: 클라이언트 IP - {client_ip}, 메서드 - {method}")
+    user_agent = request.headers.get("user-agent", "Unknown")
 
-    try:
-        body = await request.json()
-        log_content = body.get("content", "")
-    except json.JSONDecodeError:
-        log_content = ""
-
-    server_ip = config["ADDRESS"]["SERVER_IP_ADDRESS"]
-    target_url = f"http://{server_ip}/{path}"
+    if not target_url:
+        server_ip = config["ADDRESS"]["SERVER_IP_ADDRESS"]
+        target_url = f"http://{server_ip}/{path}"
+    # target_url = request.url
+    print(f"target url:{target_url}")
+    print(log_content)
 
     # httpx를 이용해 대상 서버에 요청 전송
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.request(method, target_url, json=log_content)
+            if isinstance(json_data, dict):
+                request_params = {"json": json_data}
+            else:
+                request_params = {"data": json_data}
+            response = await client.request(method, target_url, **request_params)
         send_status = "SUCCESS"
         response_code = response.status_code
         error_message = None
