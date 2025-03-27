@@ -56,6 +56,8 @@ async def catch_all(
     """
     특별히 엔드포인트를 설정하지 않은 모든 요청을 받아오는 Catch-all API
     """
+    print(f"request header:{request.headers}")
+    
     content_type = request.headers.get("Content-Type", "")
     if "application/json" in content_type:
         data = await handle_json_data(request)

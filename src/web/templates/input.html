@@ -79,6 +79,13 @@
   <br>
 
   <script>
+    function logFormData(formData, label) {
+      console.log(label);
+      for (const pair of formData.entries()) {
+        console.log(pair[0] + ':', pair[1]);
+      }
+    }
+
     document.getElementById('apiForm').addEventListener('submit', async (event) => {
       event.preventDefault(); // 기본 제출 동작 방지
   
@@ -90,6 +97,8 @@
         return;
       }
       const formData = new FormData(form);
+      logFormData(formData, 'Submit event - 초기 formData:');
+
       const httpMethod = document.getElementById('method').value.trim();
       const repeatCount = parseInt(formData.get('repeatCount'));
   
@@ -117,12 +126,16 @@
     });
   
     async function sendRequests(actionUrl, method, formData, repeatCount) {
+      logFormData(formData, 'sendRequests 진입 시 - formData:');
       for (let i = 0; i < repeatCount; i++) {
         try {
-          // GET/HEAD일 경우 body 제외
-          let fetchOptions = { method };
-          if (method !== 'GET' && method !== 'HEAD') {
-            fetchOptions.body = formData;
+          let fetchOptions = { body: formData };
+          if (method === 'GET') {
+            // GET 요청의 경우, 실제 전송은 POST로 진행하되, 헤더로 GET임을 알림
+            fetchOptions.method = 'POST';
+            fetchOptions.headers = { 'X-HTTP-Method-Override': 'GET' };
+          } else {
+            fetchOptions.method = method;
           }
 
           const response = await fetch(actionUrl, fetchOptions);
