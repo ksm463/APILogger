@@ -61,8 +61,14 @@ async def catch_all(
     content_type = request.headers.get("Content-Type", "")
     if "application/json" in content_type:
         data = await handle_json_data(request)
-    else:
+        use_json_param = True
+    elif "application/x-www-form-urlencoded" in content_type or "multipart/form-data" in content_type:
         data = await handle_form_data(request)
+        use_json_param = False
+    else:
+        # Content-Type이 명시되지 않거나 예상 범위에 없는 경우 기본적으로 JSON 처리
+        data = await handle_json_data(request)
+        use_json_param = True
     
     client_ip = data["client_ip"]
     target_url = data["target_url"]
@@ -85,7 +91,7 @@ async def catch_all(
     # httpx를 이용해 대상 서버에 요청 전송
     try:
         async with httpx.AsyncClient() as client:
-            if isinstance(json_data, dict):
+            if use_json_param:
                 request_params = {"json": json_data}
             else:
                 request_params = {"data": json_data}
