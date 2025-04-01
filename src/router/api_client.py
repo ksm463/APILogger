@@ -30,21 +30,6 @@ async def handle_json_data(request: Request) -> dict:
         "log_content": log_content
     }
 
-async def handle_form_data(request: Request) -> dict:
-    form = await request.form()
-    client_ip = request.client.host
-    target_url = form.get("ip", "")
-    method = form.get("method", request.method)
-    json_data = form.get("content", "")
-    log_content = json_data
-    return {
-        "client_ip": client_ip,
-        "target_url": target_url,
-        "method": method,
-        "json_data": json_data,
-        "log_content": log_content
-    }
-
 
 @api_client.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def catch_all(
@@ -59,31 +44,26 @@ async def catch_all(
     """
     print(f"request header:{request.headers}")
     
+    try:
+        content_type = request.headers["Content-Type"]
+        if "application/json" not in content_type:
+            raise ValueError("Unsupported Media Type. Please use application/json.")
+    except Exception as e:
+        return JSONResponse(status_code=415, content={"error": str(e)})
+    
     if request.method in ["GET", "HEAD"]:
         query = request.query_params
         data = {
             "client_ip": request.client.host,
-            # query string에 target_url 또는 ip 키를 확인
             "target_url": query.get("target_url") or query.get("ip") or str(request.url),
             "method": query.get("method", request.method),
-            # json_data와 log_content는 query string에서 문자열로 전달됨
             "json_data": query.get("json_data", ""),
             "log_content": query.get("log_content", query.get("json_data", ""))
         }
-        # GET/HEAD는 body 없이 처리하므로 use_json_param은 False
         use_json_param = False
     else:
-        content_type = request.headers.get("Content-Type", "")
-        if "application/json" in content_type:
-            data = await handle_json_data(request)
-            use_json_param = True
-        elif "application/x-www-form-urlencoded" in content_type or "multipart/form-data" in content_type:
-            data = await handle_form_data(request)
-            use_json_param = False
-        else:
-            # Content-Type이 명시되지 않은 경우 기본적으로 JSON 처리
-            data = await handle_json_data(request)
-            use_json_param = True
+        data = await handle_json_data(request)
+        use_json_param = True
     
     client_ip = data["client_ip"]
     target_url = data["target_url"]
@@ -102,10 +82,8 @@ async def catch_all(
         final_path = f"{path}" if path else parsed_url.path
         target_url = f"http://{server_ip}/{final_path}"
 
-    print(f"target url: {target_url}")
-    print(f"parsed url: {parsed_url}")
-    print(f"target address: {target_address}")
-    print(f"content:{log_content}")
+    logger.debug(f"target url: {target_url}")
+    logger.debug(f"content:{log_content}")
 
     # httpx를 이용해 대상 서버에 요청 전송
     try:
