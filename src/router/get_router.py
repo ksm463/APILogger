@@ -15,7 +15,7 @@ get_router = APIRouter()
 templates = Jinja2Templates(directory="/mockapi/src/web/templates")
 
 
-@get_router.get("/", response_class=HTMLResponse)
+@get_router.get("/main", response_class=HTMLResponse)
 async def read_root(request: Request):
     return templates.TemplateResponse("main.html", {"request": request})
   
