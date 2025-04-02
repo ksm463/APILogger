@@ -15,6 +15,8 @@ async def handle_json_data(request: Request) -> dict:
         json_data = await request.json()
     except json.JSONDecodeError:
         json_data = {}
+    if request.method.upper() == "GET" and not json_data:
+        json_data = dict(request.query_params)
     client_ip = request.client.host
     if isinstance(json_data, dict):
         target_url = json_data.get("target_url", str(request.url))
@@ -29,6 +31,18 @@ async def handle_json_data(request: Request) -> dict:
         "json_data": json_data,
         "log_content": log_content
     }
+
+async def set_target_url(target_url: str, path: str, config: dict) -> str:
+    print(f"target url: {target_url}")
+    local_address = config["ADDRESS"]["LOCAL_IP_ADDRESS"]
+    parsed_url = urlparse(target_url)
+    target_address = parsed_url.netloc
+    print(f"target address: {target_address}")
+    if target_address == local_address:
+        server_ip = config["ADDRESS"]["SERVER_IP_ADDRESS"]
+        final_path = f"{path}" if path else parsed_url.path
+        return f"http://{server_ip}/{final_path}"
+    return target_url
 
 
 @api_client.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
@@ -51,19 +65,8 @@ async def catch_all(
     except Exception as e:
         return JSONResponse(status_code=415, content={"error": str(e)})
     
-    if request.method in ["GET", "HEAD"]:
-        query = request.query_params
-        data = {
-            "client_ip": request.client.host,
-            "target_url": query.get("target_url") or query.get("ip") or str(request.url),
-            "method": query.get("method", request.method),
-            "json_data": query.get("json_data", ""),
-            "log_content": query.get("log_content", query.get("json_data", ""))
-        }
-        use_json_param = False
-    else:
-        data = await handle_json_data(request)
-        use_json_param = True
+    data = await handle_json_data(request)
+    use_json_param = True
     
     client_ip = data["client_ip"]
     target_url = data["target_url"]
@@ -74,16 +77,10 @@ async def catch_all(
     logger.info(f"요청 시작: 클라이언트 IP - {client_ip}, 메서드 - {method}")
     user_agent = request.headers.get("user-agent", "Unknown")
 
-    local_address = config["ADDRESS"]["LOCAL_IP_ADDRESS"]
-    parsed_url = urlparse(target_url)
-    target_address = parsed_url.netloc
-    if target_address == local_address:
-        server_ip = config["ADDRESS"]["SERVER_IP_ADDRESS"]
-        final_path = f"{path}" if path else parsed_url.path
-        target_url = f"http://{server_ip}/{final_path}"
+    target_url = await set_target_url(target_url, path, config)
 
     logger.debug(f"target url: {target_url}")
-    logger.debug(f"content:{log_content}")
+    logger.debug(f"content: {log_content}")
 
     # httpx를 이용해 대상 서버에 요청 전송
     try:
@@ -102,10 +99,10 @@ async def catch_all(
         except json.JSONDecodeError:
             server_response_data = response.text
 
-    except Exception as exc:
+    except Exception as e:
         send_status = "FAIL"
         response_code = None
-        error_message = str(exc)
+        error_message = str(e)
         logger.error(f"서버 전송 실패: {error_message}")
         server_response_data = {"error": error_message}
     
