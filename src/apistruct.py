@@ -1,4 +1,5 @@
 from sqlmodel import SQLModel, Field
+from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
@@ -13,3 +14,9 @@ class APIRequest(SQLModel, table=True):
     response_code: Optional[int] = None        # 서버로부터 받은 응답 코드 (e.g. HTTP 200, 404 등)
     error_message: Optional[str] = None        # 실패했을 경우 에러 메시지
 
+class RequestData(BaseModel):
+    client_ip: str
+    target_url: str
+    method: str
+    json_data: dict
+    log_content: str

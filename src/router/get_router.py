@@ -12,11 +12,13 @@ templates = Jinja2Templates(directory="/mockapi/src/web/templates")
 
 
 @get_router.get("/main", response_class=HTMLResponse)
-async def read_root(request: Request):
+async def read_root(request: Request, logger = Depends(get_logger)):
+    logger.info(f"메인 페이지 로딩 요청 수신 : {request.method}")
     return templates.TemplateResponse("main.html", {"request": request})
   
 @get_router.get("/input")
-async def read_input_page(request: Request):
+async def read_input_page(request: Request, logger = Depends(get_logger)):
+    logger.info(f"입력 페이지 로딩 요청 수신 : {request.method}")
     return templates.TemplateResponse("input.html", {"request": request})
 
 
@@ -27,7 +29,7 @@ async def get_latest_work(request: Request, logger = Depends(get_logger), db_eng
     method = request.method
     user_agent = request.headers.get("user-agent", "Unknown")
 
-    logger.info(f"메서드 요청 들어옴 : {method}, {user_agent}, {client_ip}")
+    logger.info(f"메서드 요청 수신 : {method}, {user_agent}, {client_ip}")
 
     log_data = read_db(logger, db_engine)
 

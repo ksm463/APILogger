@@ -1,13 +1,18 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
+from fastapi.templating import Jinja2Templates
 import json
 import httpx
 from urllib.parse import urlparse
 
 from service.data_handler import create_log_data
 from utility.request import get_config, get_logger, get_db_engine
+from apistruct import RequestData
+
 
 api_client = APIRouter()
+
+templates = Jinja2Templates(directory="/mockapi/src/web/templates")
 
 
 async def handle_json_data(request: Request) -> dict:
@@ -24,13 +29,15 @@ async def handle_json_data(request: Request) -> dict:
         target_url = str(request.url)
     method = request.method
     log_content = json.dumps(json_data, ensure_ascii=False)
-    return {
+    data_dict = {
         "client_ip": client_ip,
         "target_url": target_url,
         "method": method,
         "json_data": json_data,
         "log_content": log_content
     }
+    return RequestData(**data_dict)
+
 
 async def set_target_url(target_url: str, path: str, config: dict) -> str:
     print(f"target url: {target_url}")
@@ -56,6 +63,14 @@ async def catch_all(
     """
     특별히 엔드포인트를 설정하지 않은 모든 요청을 받아오는 Catch-all API
     """
+    # if request.method in ("GET", "HEAD"):
+    #     print(f"request method:{request.method}")
+    #     if request.query_params:
+    #         pass
+    #     else:
+    #         # 쿼리 파라미터 없이 루트 접근 -> main.html 렌더링
+    #         return templates.TemplateResponse("main.html", {"request": request})
+
     print(f"request header:{request.headers}")
     
     try:
@@ -65,14 +80,14 @@ async def catch_all(
     except Exception as e:
         return JSONResponse(status_code=415, content={"error": str(e)})
     
-    data = await handle_json_data(request)
+    data: RequestData = await handle_json_data(request)
     use_json_param = True
     
-    client_ip = data["client_ip"]
-    target_url = data["target_url"]
-    method = data["method"]
-    json_data = data["json_data"]
-    log_content = data["log_content"]
+    client_ip = data.client_ip
+    target_url = data.target_url
+    method = data.method
+    json_data = data.json_data
+    log_content = data.log_content
     
     logger.info(f"요청 시작: 클라이언트 IP - {client_ip}, 메서드 - {method}")
     user_agent = request.headers.get("user-agent", "Unknown")
