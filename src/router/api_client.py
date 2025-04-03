@@ -1,67 +1,14 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 import json
-import httpx
-from urllib.parse import urlparse
 
-from service.data_handler import create_log_data
+from service.data_handler import create_log_data, handle_json_data, set_target_url
+from service.data_requester import send_httpx_request
 from utility.request import get_config, get_logger, get_db_engine
 from apistruct import RequestData
 
 
 api_client = APIRouter()
-
-templates = Jinja2Templates(directory="/mockapi/src/web/templates")
-
-
-async def handle_json_data(request: Request) -> dict:
-    try:
-        full_json = await request.json()
-    except json.JSONDecodeError:
-        full_json = {}
-
-    if request.method.upper() == "GET" and not full_json:
-        full_json = dict(request.query_params)
-
-    client_ip = request.client.host
-    if isinstance(full_json, dict):
-        target_url = full_json.get("target_url", str(request.url))
-    else:
-        target_url = str(request.url)
-
-    method = request.method
-    if isinstance(full_json, dict) and "content" in full_json:
-        payload = full_json["content"]
-    # 없으면 기존 "json_data" 키 사용 (POSTMAN 등)
-    elif isinstance(full_json, dict) and "json_data" in full_json:
-        payload = full_json["json_data"]
-    else:
-        payload = full_json
-
-
-    log_content = json.dumps(payload, ensure_ascii=False)
-    data_dict = {
-        "client_ip": client_ip,
-        "target_url": target_url,
-        "method": method,
-        "json_data": payload,
-        "log_content": log_content
-    }
-    return RequestData(**data_dict)
-
-
-async def set_target_url(target_url: str, path: str, config: dict) -> str:
-    print(f"target url: {target_url}")
-    local_address = config["ADDRESS"]["LOCAL_IP_ADDRESS"]
-    parsed_url = urlparse(target_url)
-    target_address = parsed_url.netloc
-    print(f"target address: {target_address}")
-    if target_address == local_address:
-        server_ip = config["ADDRESS"]["SERVER_IP_ADDRESS"]
-        final_path = f"{path}" if path else parsed_url.path
-        return f"http://{server_ip}/{final_path}"
-    return target_url
 
 
 @api_client.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
@@ -119,33 +66,14 @@ async def catch_all(
     logger.debug(f"target url: {target_url}")
 
     # httpx를 이용해 대상 서버에 요청 전송
-    try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            if use_json_param:
-                request_params = {"json": json_data}
-            else:
-                request_params = {"data": json_data}
-            response = await client.request(method, target_url, **request_params)
-        request_status = "SUCCESS"
-        response_code = response.status_code
-        error_message = None
-        logger.info(f"Server Send Success: Response Code {response_code}")
-        try:
-            server_response_data = response.json()
-        except json.JSONDecodeError:
-            server_response_data = response.text
-    except httpx.TimeoutException as e:
-        request_status = "FAIL"
-        response_code = None
-        error_message = "The request timed out. You waited more than 10 seconds for a server response."
-        logger.error(f"Server Send Failed: {error_message}")
-        server_response_data = {"error": error_message}
-    except Exception as e:
-        request_status = "FAIL"
-        response_code = None
-        error_message = str(e)
-        logger.error(f"Server Send Failed: {error_message}")
-        server_response_data = {"error": error_message}
+    request_status, response_code, server_response_data, error_message = await send_httpx_request(
+        method, 
+        target_url, 
+        json_data, 
+        use_json_param, 
+        timeout=10.0, 
+        logger=logger
+    )
     
     if isinstance(server_response_data, dict):
         response_content = json.dumps(server_response_data, ensure_ascii=False)
