@@ -12,60 +12,125 @@
     h1 {
       text-align: center;
     }
+    /* 테이블 전체 스타일 */
     table {
       width: 100%;
       border-collapse: collapse;
-      /* 열 너비를 균일하게 분배 */
       table-layout: fixed;
-      margin-bottom: 20px;
+      margin: 20px 0;
+      font-size: 14px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px 12px;
+    /* 헤더 셀 스타일 (중앙 정렬) */
+    th {
+      background-color: #f2f2f2;
+      color: #333;
+      font-weight: bold;
+      padding: 12px 15px;
       text-align: center;
-      /* 팝업이 셀을 넘어가도 잘리지 않도록 */
+      border-bottom: 2px solid #ddd;
+    }
+    /* 데이터 셀 스타일 */
+    td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
       position: relative;
       overflow: visible;
       white-space: nowrap;
     }
-    th {
-      background-color: #f7f7f7;
+    /* Time 열은 전체 콘텐츠 보이도록 설정 */
+    td.time-column {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
     }
-    button {
+    /* 지그재그 배경 (줄무늬) */
+    tbody tr:nth-child(odd) {
+      background-color: #fafafa;
+    }
+    tbody tr:nth-child(even) {
+      background-color: #fff;
+    }
+    /* 호버 효과 */
+    tbody tr:hover {
+      background-color: #f1f1f1;
+    }
+    /* 반응형 디자인: 화면 크기에 따라 글자 크기 및 패딩 조정 */
+    @media (max-width: 768px) {
+      table {
+        font-size: 12px;
+      }
+      th, td {
+        padding: 10px;
+      }
+    }
+    /* 버튼 스타일 (중앙 정렬) */
+    #recentBtn {
       display: block;
       margin: 0 auto;
       padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
     }
-    /* 셀 안에 표시될 짧은 텍스트 컨테이너 */
+    #recentBtn:hover {
+      background-color: #0056b3;
+    }
+    /* 셀 내 짧은 텍스트 컨테이너 (클릭 시 팝업 토글) */
     .tooltip-container {
       display: inline-block;
-      /* 셀 너비를 넘지 않도록 100%로 설정 */
       width: 100%;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       vertical-align: middle;
+      cursor: pointer;
     }
     /* 팝업 툴팁 스타일 */
     .popup-tooltip {
       position: absolute;
-      bottom: 100%;  /* 셀 위쪽에 표시 */
+      bottom: 100%;
       left: 50%;
       transform: translateX(-50%) scale(0);
       transform-origin: bottom center;
-      transition: transform 0.2s ease-out;
+      transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+      opacity: 0;
       z-index: 1000;
       background-color: #fff;
-      border: 1px solid #ccc;
+      border: 2px solid #007bff;
       padding: 10px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-      white-space: normal;
+      white-space: pre-wrap;
       min-width: 150px;
-      max-width: 300px;
+      text-align: left;
+      font-size: 16px;
+      overflow-wrap: break-word;
+      word-break: break-all;
     }
-    .tooltip-container:hover .popup-tooltip {
+    .popup-tooltip::before {
+      content: "";
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 8px;
+      border-style: solid;
+      border-color: transparent transparent #fff transparent;
+    }
+    /* 활성 상태에서 팝업 보이기 */
+    .popup-tooltip.active {
       transform: translateX(-50%) scale(1);
+      opacity: 1;
+    }
+    /* JSON 형식화된 내용 스타일 */
+    .popup-tooltip pre {
+      margin: 0;
+      font-family: Consolas, monospace;
+      font-size: 16px;
     }
   </style>
 </head>
@@ -73,6 +138,19 @@
   <h1>API 통신 현황</h1>
 
   <table id="apiTable">
+    <!-- 컬럼별 폭은 colgroup에 인라인 스타일로 지정 -->
+    <colgroup>
+      <col style="width: 5%;">
+      <col style="width: 7%;">
+      <col style="width: 10%;">
+      <col style="width: 8%;">
+      <col style="width: 18%;">
+      <col style="width: 18%;">
+      <col style="width: 12%;">
+      <col style="width: 7%;">
+      <col style="width: 5%;">
+      <col style="width: 10%;">
+    </colgroup>
     <thead>
       <tr>
         <th>Index</th>
@@ -95,26 +173,61 @@
   <button id="recentBtn">최근 조회</button>
 
   <script>
-    // 하나의 셀(td)에 대해 짧은 텍스트 + 팝업 툴팁을 생성하는 함수
-    function createTooltipCell(content) {
-      // td 생성
-      const td = document.createElement('td');
+    // JSON 형식화 함수: 유효한 JSON 문자열이면 포매팅된 문자열 반환, 아니면 원본 반환
+    function formatContent(content) {
+      try {
+        const obj = JSON.parse(content);
+        return JSON.stringify(obj, null, 2);
+      } catch (e) {
+        return content;
+      }
+    }
 
-      // 내부에 tooltip-container 라는 span 추가
+    // 클릭 시 팝업 토글을 위한 이벤트 핸들러 추가
+    function addClickToggle(container, popup) {
+      container.addEventListener('click', function(event) {
+        // 다른 곳으로 클릭 이벤트가 전파되는 것을 막음
+        event.stopPropagation();
+        popup.classList.toggle('active');
+      });
+    }
+
+    // 문서의 다른 영역 클릭 시 모든 팝업 닫기
+    document.addEventListener('click', function() {
+      document.querySelectorAll('.popup-tooltip.active').forEach(popup => {
+        popup.classList.remove('active');
+      });
+    });
+
+    // 하나의 셀(td)에 대해 짧은 텍스트 + 클릭 확장 팝업을 생성하는 함수
+    function createTooltipCell(content, isTimeColumn = false) {
+      const td = document.createElement('td');
+      // isTimeColumn이 true인 경우, time-column 클래스를 추가
+      if (isTimeColumn) {
+        td.className = 'time-column';
+      }
+      
       const container = document.createElement('span');
       container.className = 'tooltip-container';
-      // container에 바로 content를 넣으면, text-overflow로 셀 폭을 넘기지 않음
-      container.textContent = content;
+      container.textContent = content;  // 셀에 표시될 짧은 텍스트
 
-      // 팝업 요소
       const popup = document.createElement('div');
       popup.className = 'popup-tooltip';
-      popup.textContent = content;
 
-      // container 안에 팝업 요소 추가
+      // JSON 형식이면 포매팅하여 <pre> 태그로 감싸고, 아니면 일반 텍스트로 표시
+      const formatted = formatContent(content);
+      if (formatted !== content) {
+        const pre = document.createElement('pre');
+        pre.textContent = formatted;
+        popup.appendChild(pre);
+      } else {
+        popup.textContent = content;
+      }
+
       container.appendChild(popup);
-      // td에 container 추가
       td.appendChild(container);
+
+      addClickToggle(container, popup);
 
       return td;
     }
@@ -127,7 +240,6 @@
       dataArray.forEach((row) => {
         const tr = document.createElement('tr');
 
-        // 인덱스, 메서드는 단순 텍스트 셀
         const indexTd = document.createElement('td');
         indexTd.textContent = row.index;
         tr.appendChild(indexTd);
@@ -136,7 +248,6 @@
         methodTd.textContent = row.method;
         tr.appendChild(methodTd);
 
-        // 나머지는 툴팁 셀
         tr.appendChild(createTooltipCell(row.user_agent));
         tr.appendChild(createTooltipCell(row.client_ip));
         tr.appendChild(createTooltipCell(row.request));
@@ -154,9 +265,7 @@
     document.getElementById('recentBtn').addEventListener('click', async () => {
       try {
         const response = await fetch('/read');
-        if (!response.ok) {
-          throw new Error('네트워크 응답 에러');
-        }
+        if (!response.ok) throw new Error('네트워크 응답 에러');
         const data = await response.json();
         loadTableData(data);
       } catch (error) {
