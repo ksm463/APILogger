@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
   <meta charset="UTF-8">
   <title>API 통신 현황</title>
+  <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -15,12 +15,18 @@
     table {
       width: 100%;
       border-collapse: collapse;
+      /* 열 너비를 균일하게 분배 */
+      table-layout: fixed;
       margin-bottom: 20px;
     }
     th, td {
       border: 1px solid #ccc;
       padding: 8px 12px;
       text-align: center;
+      /* 팝업이 셀을 넘어가도 잘리지 않도록 */
+      position: relative;
+      overflow: visible;
+      white-space: nowrap;
     }
     th {
       background-color: #f7f7f7;
@@ -31,12 +37,41 @@
       padding: 10px 20px;
       cursor: pointer;
     }
+    /* 셀 안에 표시될 짧은 텍스트 컨테이너 */
+    .tooltip-container {
+      display: inline-block;
+      /* 셀 너비를 넘지 않도록 100%로 설정 */
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+    }
+    /* 팝업 툴팁 스타일 */
+    .popup-tooltip {
+      position: absolute;
+      bottom: 100%;  /* 셀 위쪽에 표시 */
+      left: 50%;
+      transform: translateX(-50%) scale(0);
+      transform-origin: bottom center;
+      transition: transform 0.2s ease-out;
+      z-index: 1000;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      white-space: normal;
+      min-width: 150px;
+      max-width: 300px;
+    }
+    .tooltip-container:hover .popup-tooltip {
+      transform: translateX(-50%) scale(1);
+    }
   </style>
 </head>
 <body>
   <h1>API 통신 현황</h1>
-  
-  <!-- 테이블 영역 -->
+
   <table id="apiTable">
     <thead>
       <tr>
@@ -53,34 +88,65 @@
       </tr>
     </thead>
     <tbody>
-      <!-- 자바스크립트로 동적으로 채움 -->
+      <!-- 데이터는 JavaScript를 통해 동적으로 삽입 -->
     </tbody>
   </table>
 
-  <!-- 최근 조회 버튼 -->
   <button id="recentBtn">최근 조회</button>
 
   <script>
+    // 하나의 셀(td)에 대해 짧은 텍스트 + 팝업 툴팁을 생성하는 함수
+    function createTooltipCell(content) {
+      // td 생성
+      const td = document.createElement('td');
+
+      // 내부에 tooltip-container 라는 span 추가
+      const container = document.createElement('span');
+      container.className = 'tooltip-container';
+      // container에 바로 content를 넣으면, text-overflow로 셀 폭을 넘기지 않음
+      container.textContent = content;
+
+      // 팝업 요소
+      const popup = document.createElement('div');
+      popup.className = 'popup-tooltip';
+      popup.textContent = content;
+
+      // container 안에 팝업 요소 추가
+      container.appendChild(popup);
+      // td에 container 추가
+      td.appendChild(container);
+
+      return td;
+    }
+
     // 테이블에 데이터를 채워주는 함수
     function loadTableData(dataArray) {
-      const tableBody = document.querySelector('#apiTable tbody');
-      tableBody.innerHTML = ''; // 기존 행 초기화
+      const tbody = document.querySelector('#apiTable tbody');
+      tbody.innerHTML = '';
 
       dataArray.forEach((row) => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${row.index}</td>
-          <td>${row.method}</td>
-          <td>${row.user_agent}</td>
-          <td>${row.client_ip}</td>
-          <td>${row.request}</td>
-          <td>${row.response}</td>
-          <td>${row.time}</td>
-          <td>${row.request_status}</td>
-          <td>${row.response_code}</td>
-          <td>${row.error_message}</td>
-        `;
-        tableBody.appendChild(tr);
+
+        // 인덱스, 메서드는 단순 텍스트 셀
+        const indexTd = document.createElement('td');
+        indexTd.textContent = row.index;
+        tr.appendChild(indexTd);
+
+        const methodTd = document.createElement('td');
+        methodTd.textContent = row.method;
+        tr.appendChild(methodTd);
+
+        // 나머지는 툴팁 셀
+        tr.appendChild(createTooltipCell(row.user_agent));
+        tr.appendChild(createTooltipCell(row.client_ip));
+        tr.appendChild(createTooltipCell(row.request));
+        tr.appendChild(createTooltipCell(row.response));
+        tr.appendChild(createTooltipCell(row.time));
+        tr.appendChild(createTooltipCell(row.request_status));
+        tr.appendChild(createTooltipCell(row.response_code));
+        tr.appendChild(createTooltipCell(row.error_message));
+
+        tbody.appendChild(tr);
       });
     }
 

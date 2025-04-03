@@ -22,8 +22,7 @@ async def send_httpx_request(
         request_status = "SUCCESS"
         response_code = response.status_code
         error_message = None
-        if logger:
-            logger.info(f"서버 전송 성공: 응답코드 {response_code}")
+        logger.info(f"server request succeeded: response code {response_code}")
         try:
             server_response_data = response.json()
         except json.JSONDecodeError:
@@ -32,16 +31,14 @@ async def send_httpx_request(
     except httpx.TimeoutException as e:
         request_status = "FAIL"
         response_code = None
-        error_message = "요청 시간이 초과되었습니다. 서버 응답을 10초 이상 기다렸습니다."
-        if logger:
-            logger.error(f"서버 전송 실패: {error_message}")
+        error_message = "The request timed out. You waited more than 10 seconds for a server response."
+        logger.error(f"server request failed: {error_message}")
         server_response_data = {"error": error_message}
         return request_status, response_code, server_response_data, error_message
     except Exception as e:
         request_status = "FAIL"
         response_code = None
         error_message = str(e)
-        if logger:
-            logger.error(f"서버 전송 실패: {error_message}")
+        logger.error(f"server request failed: {error_message}")
         server_response_data = {"error": error_message}
         return request_status, response_code, server_response_data, error_message

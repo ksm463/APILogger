@@ -31,8 +31,7 @@ async def catch_all(
         elif path:
             pass
         else:
-            # 쿼리 파라미터 없이 루트 접근 -> main.html 렌더링
-            # /main 함수로 리다이렉팅 하는 방법
+            # 루트 엔드포인트로 접근 시 /main 함수로 리다이렉팅
             logger.debug(f"root endpoint called.")
             return RedirectResponse(url="/main")
 
