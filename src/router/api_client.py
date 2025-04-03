@@ -120,7 +120,7 @@ async def catch_all(
 
     # httpx를 이용해 대상 서버에 요청 전송
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=10.0) as client:
             if use_json_param:
                 request_params = {"json": json_data}
             else:
@@ -129,16 +129,22 @@ async def catch_all(
         request_status = "SUCCESS"
         response_code = response.status_code
         error_message = None
-        logger.info(f"서버 전송 성공: 응답코드 {response_code}")
+        logger.info(f"Server Send Success: Response Code {response_code}")
         try:
             server_response_data = response.json()
         except json.JSONDecodeError:
             server_response_data = response.text
+    except httpx.TimeoutException as e:
+        request_status = "FAIL"
+        response_code = None
+        error_message = "The request timed out. You waited more than 10 seconds for a server response."
+        logger.error(f"Server Send Failed: {error_message}")
+        server_response_data = {"error": error_message}
     except Exception as e:
         request_status = "FAIL"
         response_code = None
         error_message = str(e)
-        logger.error(f"서버 전송 실패: {error_message}")
+        logger.error(f"Server Send Failed: {error_message}")
         server_response_data = {"error": error_message}
     
     if isinstance(server_response_data, dict):
