@@ -17,23 +17,35 @@ templates = Jinja2Templates(directory="/mockapi/src/web/templates")
 
 async def handle_json_data(request: Request) -> dict:
     try:
-        json_data = await request.json()
+        full_json = await request.json()
     except json.JSONDecodeError:
-        json_data = {}
-    if request.method.upper() == "GET" and not json_data:
-        json_data = dict(request.query_params)
+        full_json = {}
+
+    if request.method.upper() == "GET" and not full_json:
+        full_json = dict(request.query_params)
+
     client_ip = request.client.host
-    if isinstance(json_data, dict):
-        target_url = json_data.get("target_url", str(request.url))
+    if isinstance(full_json, dict):
+        target_url = full_json.get("target_url", str(request.url))
     else:
         target_url = str(request.url)
+
     method = request.method
-    log_content = json.dumps(json_data, ensure_ascii=False)
+    if isinstance(full_json, dict) and "content" in full_json:
+        payload = full_json["content"]
+    # 없으면 기존 "json_data" 키 사용 (POSTMAN 등)
+    elif isinstance(full_json, dict) and "json_data" in full_json:
+        payload = full_json["json_data"]
+    else:
+        payload = full_json
+
+
+    log_content = json.dumps(payload, ensure_ascii=False)
     data_dict = {
         "client_ip": client_ip,
         "target_url": target_url,
         "method": method,
-        "json_data": json_data,
+        "json_data": payload,
         "log_content": log_content
     }
     return RequestData(**data_dict)
