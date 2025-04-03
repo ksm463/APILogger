@@ -16,7 +16,7 @@ def create_log_data(
     client_ip: str,
     request: Any,
     response: Any,
-    send_status: str = "PENDING",
+    request_status: str = "PENDING",
     response_code: Optional[int] = None,
     error_message: Optional[str] = None
 ) -> APIRequest:
@@ -36,7 +36,7 @@ def create_log_data(
         request=request,
         response=response,
         time=current_time,
-        send_status=send_status,
+        request_status=request_status,
         response_code=response_code,
         error_message=error_message
     )

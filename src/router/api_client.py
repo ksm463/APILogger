@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Depends
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 import json
 import httpx
@@ -74,8 +74,8 @@ async def catch_all(
         else:
             # 쿼리 파라미터 없이 루트 접근 -> main.html 렌더링
             # /main 함수로 리다이렉팅 하는 방법
-            print(f"request query params:{request.query_params}")
-            return templates.TemplateResponse("main.html", {"request": request})
+            logger.debug(f"root endpoint called.")
+            return RedirectResponse(url="/main")
 
     logger.debug(f"request header:{request.headers}")
     
@@ -105,7 +105,6 @@ async def catch_all(
     target_url = await set_target_url(target_url, path, config)
 
     logger.debug(f"target url: {target_url}")
-    logger.debug(f"content: {log_content}")
 
     # httpx를 이용해 대상 서버에 요청 전송
     try:
@@ -115,7 +114,7 @@ async def catch_all(
             else:
                 request_params = {"data": json_data}
             response = await client.request(method, target_url, **request_params)
-        send_status = "SUCCESS"
+        request_status = "SUCCESS"
         response_code = response.status_code
         error_message = None
         logger.info(f"서버 전송 성공: 응답코드 {response_code}")
@@ -124,7 +123,7 @@ async def catch_all(
         except json.JSONDecodeError:
             server_response_data = response.text
     except Exception as e:
-        send_status = "FAIL"
+        request_status = "FAIL"
         response_code = None
         error_message = str(e)
         logger.error(f"서버 전송 실패: {error_message}")
@@ -140,9 +139,9 @@ async def catch_all(
         method, user_agent, client_ip,
         request=log_content,
         response=response_content,
-        send_status=send_status,
+        request_status=request_status,
         response_code=response_code,
         error_message=error_message
     )
-    logger.info(f"최종 로그 기록 완료: {log_data.method}, 상태: {log_data.send_status}")
+    logger.info(f"최종 로그 기록 완료: {log_data.method}, 상태: {log_data.request_status}")
     return JSONResponse(content=server_response_data)

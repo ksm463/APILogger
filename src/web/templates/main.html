@@ -47,6 +47,8 @@
         <th>Request</th>
         <th>Response</th>
         <th>Time</th>
+        <th>Request Status</th>
+        <th>Response Code</th>
       </tr>
     </thead>
     <tbody>
@@ -73,6 +75,8 @@
           <td>${row.request}</td>
           <td>${row.response}</td>
           <td>${row.time}</td>
+          <td>${row.request_status}</td>
+          <td>${row.response_code}</td>
         `;
         tableBody.appendChild(tr);
       });
