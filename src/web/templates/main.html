@@ -44,7 +44,8 @@
         <th>Method</th>
         <th>User-Agent</th>
         <th>Client IP</th>
-        <th>Content</th>
+        <th>Request</th>
+        <th>Response</th>
         <th>Time</th>
       </tr>
     </thead>
@@ -69,7 +70,8 @@
           <td>${row.method}</td>
           <td>${row.user_agent}</td>
           <td>${row.client_ip}</td>
-          <td>${row.content}</td>
+          <td>${row.request}</td>
+          <td>${row.response}</td>
           <td>${row.time}</td>
         `;
         tableBody.appendChild(tr);
