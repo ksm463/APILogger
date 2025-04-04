@@ -1,6 +1,6 @@
 from sqlmodel import Session, select
 from sqlalchemy import desc
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 from apistruct import APIRequest
 
@@ -39,6 +39,9 @@ def read_db_latest(logger: logging.Logger, db_engine):
         return []
 
 def read_db_by_date(logger, db_engine, start_date: datetime, end_date: datetime):
+    # end_date가 00:00:00이라면 해당 날짜의 마지막 시간으로 조정 (23:59:59)
+    if end_date.time() == datetime.min.time():
+        end_date = end_date + timedelta(days=1) - timedelta(seconds=1)
     try:
         with Session(db_engine) as session:
             statement = (

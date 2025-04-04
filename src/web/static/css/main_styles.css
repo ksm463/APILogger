@@ -1,115 +1,154 @@
 body {
-font-family: Arial, sans-serif;
-margin: 20px;
-}
-h1 {
-text-align: center;
-}
-table {
-width: 100%;
-border-collapse: collapse;
-table-layout: fixed;
-margin: 20px 0;
-font-size: 14px;
-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-th {
-background-color: #f2f2f2;
-color: #333;
-font-weight: bold;
-padding: 12px 15px;
-text-align: center;
-border-bottom: 2px solid #ddd;
-}
-td {
-padding: 12px 15px;
-border-bottom: 1px solid #ddd;
-text-align: center;
-position: relative;
-overflow: visible;
-white-space: nowrap;
-}
-td.time-column {
-white-space: normal;
-overflow: visible;
-text-overflow: clip;
-}
-tbody tr:nth-child(odd) {
-background-color: #fafafa;
-}
-tbody tr:nth-child(even) {
-background-color: #fff;
-}
-tbody tr:hover {
-background-color: #f1f1f1;
-}
-@media (max-width: 768px) {
-table {
-    font-size: 12px;
-}
-th, td {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+  }
+  h1 {
+    text-align: center;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin: 20px 0;
+    font-size: 14px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  th {
+    background-color: #f2f2f2;
+    color: #333;
+    font-weight: bold;
+    padding: 12px 15px;
+    text-align: center;
+    border-bottom: 2px solid #ddd;
+  }
+  td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+    position: relative;
+    overflow: visible;
+    white-space: nowrap;
+  }
+  td.time-column {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+  tbody tr:nth-child(odd) {
+    background-color: #fafafa;
+  }
+  tbody tr:nth-child(even) {
+    background-color: #fff;
+  }
+  tbody tr:hover {
+    background-color: #f1f1f1;
+  }
+  @media (max-width: 768px) {
+    table {
+        font-size: 12px;
+    }
+    th, td {
+        padding: 10px;
+    }
+  }
+  .button-group {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  #recentBtn, #dateBtn {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 0 10px;
+  }
+  #recentBtn:hover, #dateBtn:hover {
+    background-color: #0056b3;
+  }
+  #submitDateBtn, #cancelDateBtn {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 0 10px;
+  }
+  #submitDateBtn:hover, #cancelDateBtn:hover {
+    background-color: #0056b3;
+  }
+  
+  /* 날짜 폼 스타일 */
+  #dateForm {
+    display: none;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  #dateForm label {
+    font-size: 16px;
+    margin: 0 5px;
+  }
+  #dateForm input[type="date"] {
+    padding: 5px;
+    font-size: 16px;
+    margin: 0 5px;
+  }
+  #dateForm button {
+    padding: 5px 10px;
+    font-size: 16px;
+    margin: 0 5px;
+  }
+  
+  /* 기존 tooltip 스타일 */
+  .tooltip-container {
+    display: inline-block;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    cursor: pointer;
+  }
+  .popup-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) scale(0);
+    transform-origin: bottom center;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+    opacity: 0;
+    z-index: 1000;
+    background-color: #fff;
+    border: 2px solid #007bff;
     padding: 10px;
-}
-}
-#recentBtn {
-display: block;
-margin: 0 auto;
-padding: 10px 20px;
-font-size: 16px;
-background-color: #007bff;
-color: white;
-border: none;
-border-radius: 5px;
-cursor: pointer;
-}
-#recentBtn:hover {
-background-color: #0056b3;
-}
-.tooltip-container {
-display: inline-block;
-width: 100%;
-white-space: nowrap;
-overflow: hidden;
-text-overflow: ellipsis;
-vertical-align: middle;
-cursor: pointer;
-}
-.popup-tooltip {
-position: absolute;
-bottom: 100%;
-left: 50%;
-transform: translateX(-50%) scale(0);
-transform-origin: bottom center;
-transition: transform 0.3s ease-out, opacity 0.3s ease-out;
-opacity: 0;
-z-index: 1000;
-background-color: #fff;
-border: 2px solid #007bff;
-padding: 10px;
-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-white-space: pre-wrap;
-min-width: 150px;
-text-align: left;
-font-size: 16px;
-overflow-wrap: break-word;
-word-break: break-all;
-}
-.popup-tooltip::before {
-content: "";
-position: absolute;
-bottom: -8px;
-left: 50%;
-transform: translateX(-50%);
-border-width: 8px;
-border-style: solid;
-border-color: transparent transparent #fff transparent;
-}
-.popup-tooltip.active {
-transform: translateX(-50%) scale(1);
-opacity: 1;
-}
-.popup-tooltip pre {
-margin: 0;
-font-family: Consolas, monospace;
-font-size: 16px;
-}
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    white-space: pre-wrap;
+    min-width: 150px;
+    text-align: left;
+    font-size: 16px;
+    overflow-wrap: break-word;
+    word-break: break-all;
+  }
+  .popup-tooltip::before {
+    content: "";
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 8px;
+    border-style: solid;
+    border-color: transparent transparent #fff transparent;
+  }
+  .popup-tooltip.active {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+  .popup-tooltip pre {
+    margin: 0;
+    font-family: Consolas, monospace;
+    font-size: 16px;
+  }

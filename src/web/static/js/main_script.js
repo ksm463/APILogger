@@ -18,14 +18,14 @@ function addClickToggle(container, popup) {
 
 // 문서 클릭 시 모든 활성 팝업 닫기
 document.addEventListener('click', function() {
-document.querySelectorAll('.popup-tooltip.active').forEach(popup => {
+    document.querySelectorAll('.popup-tooltip.active').forEach(popup => {
         popup.classList.remove('active');
     });
 });
 
 // 셀 생성 함수 (짧은 텍스트와 팝업 포함)
 function createTooltipCell(content, isTimeColumn = false) {
-const td = document.createElement('td');
+    const td = document.createElement('td');
     if (isTimeColumn) {
         td.className = 'time-column';
     }
@@ -74,14 +74,14 @@ function loadTableData(dataArray) {
     dataArray.forEach(row => {
         const tr = document.createElement('tr');
         columns.forEach(col => {
-        let cell;
-        if (col.type === 'text') {
-            cell = document.createElement('td');
-            cell.textContent = row[col.key];
-        } else {
-            cell = createTooltipCell(row[col.key], col.isTime);
-        }
-        tr.appendChild(cell);
+            let cell;
+            if (col.type === 'text') {
+                cell = document.createElement('td');
+                cell.textContent = row[col.key];
+            } else {
+                cell = createTooltipCell(row[col.key], col.isTime);
+            }
+            tr.appendChild(cell);
         });
         tbody.appendChild(tr);
     });
@@ -96,5 +96,42 @@ document.getElementById('recentBtn').addEventListener('click', async () => {
         loadTableData(data);
     } catch (error) {
         console.error('데이터 로드 에러:', error);
+    }
+});
+
+// "날짜별 조회" 버튼 클릭 시 날짜 선택 폼 표시
+document.getElementById('dateBtn').addEventListener('click', () => {
+    const dateForm = document.getElementById('dateForm');
+    dateForm.style.display = 'block';
+});
+
+// "취소" 버튼 클릭 시 날짜 선택 폼 숨기기
+document.getElementById('cancelDateBtn').addEventListener('click', () => {
+    const dateForm = document.getElementById('dateForm');
+    dateForm.style.display = 'none';
+});
+
+// "조회" 버튼 클릭 시 날짜별 데이터 조회
+document.getElementById('submitDateBtn').addEventListener('click', async () => {
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    const startDate = startDateInput.value;
+    const endDate = endDateInput.value;
+
+    if (!startDate || !endDate) {
+        alert("시작일과 종료일을 모두 선택해주세요.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/read/date?start_date=${startDate}&end_date=${endDate}`);
+        if (!response.ok) throw new Error('네트워크 응답 에러');
+        const data = await response.json();
+        loadTableData(data);
+    } catch (error) {
+        console.error('데이터 로드 에러:', error);
+    } finally {
+        // 조회 후 날짜 입력 폼 숨기기
+        document.getElementById('dateForm').style.display = 'none';
     }
 });

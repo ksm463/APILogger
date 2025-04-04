@@ -1,4 +1,6 @@
 from fastapi import Request
+from pathlib import Path
+from datetime import datetime
 import json
 import arrow
 import configparser
@@ -6,7 +8,7 @@ import logging
 from typing import Optional, Any
 from urllib.parse import urlparse
 from apistruct import APIRequest, RequestData
-from database.data_manager import write_contents_to_db
+from database.data_manager import write_contents_to_db, read_db_latest, read_db_by_date
 
 
 async def handle_json_data(request: Request) -> dict:
@@ -96,3 +98,16 @@ def create_log_data(
     log_entry = write_contents_to_db(logger, db_engine, log_entry)
     
     return log_entry
+
+def read_db_handler(logger, db_engine, start_date: datetime = None, end_date: datetime = None):
+    db_url = db_engine.url
+    if db_url.drivername == "sqlite":
+        db_file = Path(db_url.database)
+        if not db_file.exists():
+            logger.error("DB 파일이 존재하지 않습니다.")
+            raise FileNotFoundError("DB 파일이 존재하지 않습니다.")
+
+    if start_date is not None and end_date is not None:
+        return read_db_by_date(logger, db_engine, start_date, end_date)
+    else:
+        return read_db_latest(logger, db_engine)

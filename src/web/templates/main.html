@@ -41,7 +41,20 @@
     </tbody>
   </table>
 
-  <button id="recentBtn">최근 조회</button>
+  <div class="button-group">
+    <button id="recentBtn">최근 조회</button>
+    <button id="dateBtn">날짜별 조회</button>
+  </div>
+
+  <!-- 날짜 입력 폼 (기본은 숨김) -->
+  <div id="dateForm" class="hidden">
+    <label for="startDate">시작일:</label>
+    <input type="date" id="startDate">
+    <label for="endDate">종료일:</label>
+    <input type="date" id="endDate">
+    <button id="submitDateBtn">조회</button>
+    <button id="cancelDateBtn">취소</button>
+  </div>
 
   <script src="/web/static/js/main_script.js"></script>
 </body>

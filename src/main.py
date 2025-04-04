@@ -49,7 +49,6 @@ def create_db():
     SQLModel.metadata.create_all(db_engine)
 
 
-
 if __name__== "__main__":
     host = config['ADDRESS']['HOST']
     port = config['ADDRESS']['PORT']
