@@ -17,7 +17,7 @@ def write_contents_to_db(logger: logging.Logger, db_engine, log_entry: APIReques
         
     return api_request_log
 
-def read_db(logger: logging.Logger, db_engine):
+def read_db_latest(logger: logging.Logger, db_engine):
     try:
         with Session(db_engine) as session:
             statement = (
@@ -33,6 +33,27 @@ def read_db(logger: logging.Logger, db_engine):
                     rec_dict["time"] = rec_dict["time"].strftime("%Y-%m-%d %H:%M:%S")
                 data.append(rec_dict)
             logger.debug(f"DB 데이터 반환 완료: {data}")
+            return data
+    except Exception as e:
+        logger.warning("DB 파일 읽기 실패:", e)
+        return []
+
+def read_db_by_date(logger, db_engine, start_date: datetime, end_date: datetime):
+    try:
+        with Session(db_engine) as session:
+            statement = (
+                select(APIRequest)
+                .where(APIRequest.time >= start_date, APIRequest.time <= end_date)
+                .order_by(desc(APIRequest.time))
+            )
+            results = session.exec(statement).all()
+            data = []
+            for record in results:
+                rec_dict = record.model_dump(by_alias=True)
+                if isinstance(rec_dict["time"], datetime):
+                    rec_dict["time"] = rec_dict["time"].strftime("%Y-%m-%d %H:%M:%S")
+                data.append(rec_dict)
+            logger.debug(f"DB 특정 기간({start_date} ~ {end_date}) 데이터 반환 완료: {data}")
             return data
     except Exception as e:
         logger.warning("DB 파일 읽기 실패:", e)

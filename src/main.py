@@ -16,7 +16,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-app.mount("/static", StaticFiles(directory="/mockapi/src/web/static"), name="static")
+static_dir = Path("/mockapi/src/web/static")
+app.mount("/web/static", StaticFiles(directory="/mockapi/src/web/static"), name="static")
 
 config_path = "/mockapi/src/config.ini"
 config = configparser.ConfigParser()

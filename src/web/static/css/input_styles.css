@@ -1,0 +1,32 @@
+.container {
+display: flex;
+align-items: center;
+gap: 10px;
+margin-top: 20px; /* 버튼 그룹 상단 여백 추가 */
+}
+.input-group {
+margin-bottom: 10px;
+}
+.input-group label {
+display: block;
+margin-bottom: 5px;
+}
+.input-group input[type="text"],
+.input-group textarea {
+width: 300px;
+}
+.input-group textarea {
+height: 100px;
+}
+#sendBtn {
+padding: 10px 20px;
+font-size: 16px;
+background-color: #007bff;
+color: white;
+border: none;
+border-radius: 5px;
+cursor: pointer;
+}
+#sendBtn:hover {
+background-color: #0056b3;
+}

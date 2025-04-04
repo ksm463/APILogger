@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
-from database.data_manager import read_db
+from database.data_manager import read_db_latest
 from utility.request import get_logger, get_db_engine
 
 
@@ -31,9 +31,8 @@ async def get_latest_work(request: Request, logger = Depends(get_logger), db_eng
 
     logger.info(f"메서드 요청 수신 : {method}, {user_agent}, {client_ip}")
 
-    log_data = read_db(logger, db_engine)
+    log_data = read_db_latest(logger, db_engine)
 
     logger.info("log data readed successfully")
     return JSONResponse(content=log_data)
-
 
