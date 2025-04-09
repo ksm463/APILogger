@@ -1,1 +1,1 @@
-from .data_manager import *
+from database.data_manager import *

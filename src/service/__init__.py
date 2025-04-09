@@ -1,2 +1,2 @@
-from .data_handler import *
-from .data_requester import *
+from service.data_handler import *
+from service.data_requester import *

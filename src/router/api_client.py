@@ -8,10 +8,10 @@ from utility.request import get_config, get_logger, get_db_engine
 from apistruct import RequestData
 
 
-api_client = APIRouter()
+catch_all_router = APIRouter()
 
 
-@api_client.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+@catch_all_router.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def catch_all(
     request: Request,
     path: str,
