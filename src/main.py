@@ -56,4 +56,4 @@ def create_db():
 if __name__== "__main__":
     host = config['ADDRESS']['HOST']
     port = config['ADDRESS']['PORT']
-    uvicorn.run(app, host=host, port=int(port))
+    uvicorn.run("main:app", host=host, port=int(port), reload=True)
