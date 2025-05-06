@@ -13,7 +13,7 @@ from app.router.api_client import catch_all_router
 from app.utility.logger import setup_logger
 
 
-config_path = "/mockapi/app/config.ini"
+config_path = "/APILogger/app/config.ini"
 config = configparser.ConfigParser()
 config.read(config_path)
 
@@ -48,7 +48,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 static_dir = Path("/mockapi/app/web/static")
-app.mount("/web/static", StaticFiles(directory="/mockapi/app/web/static"), name="static")
+app.mount("/web/static", StaticFiles(directory="/APILogger/app/web/static"), name="static")
 
 
 app.include_router(get_router)

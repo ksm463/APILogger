@@ -1,8 +1,8 @@
 #!/bin/bash
 
 port_num="1"
-CONTAINER_NAME="ksm_mockapi"
-IMAGE_NAME="mockapi"
+CONTAINER_NAME="ksm_APILogger"
+IMAGE_NAME="apilogger"
 TAG="0.1"
 
 fastapi_path=$(pwd)
@@ -14,9 +14,9 @@ docker run \
     --name ${CONTAINER_NAME} \
     --privileged \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
-    -v ${fastapi_path}:/mockapi \
+    -v ${fastapi_path}:/APILogger \
     -e DISPLAY=$DISPLAY \
     --shm-size 20g \
     --restart=always \
-    -w /mockapi \
+    -w /APILogger \
     ${IMAGE_NAME}:${TAG}

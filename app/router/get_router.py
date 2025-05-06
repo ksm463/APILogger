@@ -9,7 +9,7 @@ from app.utility.request import get_logger, get_db_engine
 
 get_router = APIRouter()
 
-templates = Jinja2Templates(directory="/mockapi/app/web/templates")
+templates = Jinja2Templates(directory="/APILogger/app/web/templates")
 
 
 @get_router.get("/main", response_class=HTMLResponse)
