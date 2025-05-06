@@ -13,44 +13,49 @@ from app.router.api_client import catch_all_router
 from app.utility.logger import setup_logger
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    create_db()
-    yield
-app = FastAPI(lifespan=lifespan)
-
-
-static_dir = Path("/mockapi/app/web/static")
-app.mount("/web/static", StaticFiles(directory="/mockapi/app/web/static"), name="static")
-
 config_path = "/mockapi/app/config.ini"
 config = configparser.ConfigParser()
 config.read(config_path)
-
-log_path = config['ENV']['LOG_PATH']
-logger = setup_logger(log_path)
-logger.info("Logging server started")
-logger.info(f"config info : {log_path}")
 
 db_name = config['ENV']['DB_NAME']
 db_dir = Path(__file__).parent / "app" / "database"
 db_file_path = db_dir / db_name
 DATABASE_URL = f"sqlite:///{db_file_path}"
-logger.info(f"DB info : {db_file_path}")
 db_engine = create_engine(DATABASE_URL, echo=False)
 
-app.state.config = config
-app.state.logger = logger
-app.state.db_engine = db_engine
+def create_db():
+    SQLModel.metadata.create_all(db_engine)
+    
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    log_path = config['ENV']['LOG_PATH']
+    logger = setup_logger(log_path, logger_name="fastapi_app_logger") 
+    
+    app.state.config = config
+    app.state.logger = logger
+    app.state.db_engine = db_engine
+    
+    logger.info("Logging server started")
+    logger.info(f"config info : {log_path}")
+    logger.info(f"DB info : {db_file_path}")
+    
+    create_db()
+    yield
+    
+    app.state.logger.info("Logging server stopped (from lifespan)")
+    print("FastAPI application shutdown.")
+
+app = FastAPI(lifespan=lifespan)
+
+static_dir = Path("/mockapi/app/web/static")
+app.mount("/web/static", StaticFiles(directory="/mockapi/app/web/static"), name="static")
+
 
 app.include_router(get_router)
 app.include_router(post_router)
 app.include_router(put_router)
 app.include_router(delete_router)
 app.include_router(catch_all_router)
-
-def create_db():
-    SQLModel.metadata.create_all(db_engine)
 
 
 if __name__== "__main__":
