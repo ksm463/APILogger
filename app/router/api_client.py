@@ -2,10 +2,10 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse, RedirectResponse
 import json
 
-from service.data_handler import create_log_data, handle_json_data, set_target_url
-from service.data_requester import send_httpx_request
-from utility.request import get_config, get_logger, get_db_engine
-from apistruct import RequestData
+from app.service.data_handler import create_log_data, handle_json_data, set_target_url
+from app.service.data_requester import send_httpx_request
+from app.utility.request import get_config, get_logger, get_db_engine
+from app.apistruct import RequestData
 
 
 catch_all_router = APIRouter()

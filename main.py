@@ -5,12 +5,12 @@ import uvicorn
 import configparser
 from contextlib import asynccontextmanager
 from pathlib import Path
-from router.get_router import get_router
-from router.post_router import post_router
-from router.put_router import put_router
-from router.delete_router import delete_router
-from router.api_client import catch_all_router
-from utility.logger import setup_logger
+from app.router.get_router import get_router
+from app.router.post_router import post_router
+from app.router.put_router import put_router
+from app.router.delete_router import delete_router
+from app.router.api_client import catch_all_router
+from app.utility.logger import setup_logger
 
 
 @asynccontextmanager
@@ -20,10 +20,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-static_dir = Path("/mockapi/src/web/static")
-app.mount("/web/static", StaticFiles(directory="/mockapi/src/web/static"), name="static")
+static_dir = Path("/mockapi/app/web/static")
+app.mount("/web/static", StaticFiles(directory="/mockapi/app/web/static"), name="static")
 
-config_path = "/mockapi/src/config.ini"
+config_path = "/mockapi/app/config.ini"
 config = configparser.ConfigParser()
 config.read(config_path)
 
@@ -33,7 +33,7 @@ logger.info("Logging server started")
 logger.info(f"config info : {log_path}")
 
 db_name = config['ENV']['DB_NAME']
-db_dir = Path(__file__).parent / "database"
+db_dir = Path(__file__).parent / "app" / "database"
 db_file_path = db_dir / db_name
 DATABASE_URL = f"sqlite:///{db_file_path}"
 logger.info(f"DB info : {db_file_path}")

@@ -59,7 +59,7 @@ function loadTableData(dataArray) {
     tbody.innerHTML = '';
 
     const columns = [
-        { key: 'index', type: 'text' },
+        { key: 'id', type: 'text' },
         { key: 'method', type: 'text' },
         { key: 'user_agent', type: 'tooltip' },
         { key: 'client_ip', type: 'tooltip' },

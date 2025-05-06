@@ -3,13 +3,13 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from datetime import datetime
 
-from service.data_handler import read_db_handler
-from utility.request import get_logger, get_db_engine
+from app.service.data_handler import read_db_handler
+from app.utility.request import get_logger, get_db_engine
 
 
 get_router = APIRouter()
 
-templates = Jinja2Templates(directory="/mockapi/src/web/templates")
+templates = Jinja2Templates(directory="/mockapi/app/web/templates")
 
 
 @get_router.get("/main", response_class=HTMLResponse)

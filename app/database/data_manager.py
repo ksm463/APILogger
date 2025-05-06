@@ -2,7 +2,7 @@ from sqlmodel import Session, select
 from sqlalchemy import desc
 from datetime import datetime, timedelta
 import logging
-from apistruct import APIRequest
+from app.apistruct import APIRequest
 
 
 def write_contents_to_db(logger: logging.Logger, db_engine, log_entry: APIRequest) -> APIRequest:
@@ -28,9 +28,10 @@ def read_db_latest(logger: logging.Logger, db_engine):
             results = session.exec(statement).all()
             data = []
             for record in results:
-                rec_dict = record.model_dump(by_alias=True)
-                if isinstance(rec_dict["time"], datetime):
-                    rec_dict["time"] = rec_dict["time"].strftime("%Y-%m-%d %H:%M:%S")
+                rec_dict = record.model_dump()
+                time_value = rec_dict.get("time")
+                if time_value is not None and isinstance(time_value, datetime):
+                    rec_dict["time"] = time_value.strftime("%Y-%m-%d %H:%M:%S.%f")
                 data.append(rec_dict)
             logger.debug(f"DB 데이터 반환 완료: {data}")
             return data
@@ -52,9 +53,10 @@ def read_db_by_date(logger, db_engine, start_date: datetime, end_date: datetime)
             results = session.exec(statement).all()
             data = []
             for record in results:
-                rec_dict = record.model_dump(by_alias=True)
-                if isinstance(rec_dict["time"], datetime):
-                    rec_dict["time"] = rec_dict["time"].strftime("%Y-%m-%d %H:%M:%S")
+                rec_dict = record.model_dump()
+                time_value = rec_dict.get("time")
+                if time_value is not None and isinstance(time_value, datetime):
+                    rec_dict["time"] = time_value.strftime("%Y-%m-%d %H:%M:%S.%f")
                 data.append(rec_dict)
             logger.debug(f"DB 특정 기간({start_date} ~ {end_date}) 데이터 반환 완료: {data}")
             return data

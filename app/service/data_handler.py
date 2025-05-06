@@ -7,8 +7,8 @@ import configparser
 import logging
 from typing import Optional, Any
 from urllib.parse import urlparse
-from apistruct import APIRequest, RequestData
-from database.data_manager import write_contents_to_db, read_db_latest, read_db_by_date
+from app.apistruct import APIRequest, RequestData
+from app.database.data_manager import write_contents_to_db, read_db_latest, read_db_by_date
 
 
 async def handle_json_data(request: Request) -> dict:
@@ -74,7 +74,8 @@ def create_log_data(
     error_message: Optional[str] = None
 ) -> APIRequest:
     timezone = config['ENV']['TIMEZONE']
-    current_time = arrow.now(timezone).format('YYYY-MM-DD HH:mm:ss')
+    current_time_arrow = arrow.now(timezone)
+    current_datetime = current_time_arrow.datetime
     
     if not isinstance(request, str):
         request = str(request)
@@ -82,13 +83,12 @@ def create_log_data(
         response = str(response)
     
     log_entry = APIRequest(
-        index=0,
         method=method,
         user_agent=user_agent,
         client_ip=client_ip,
         request=request,
         response=response,
-        time=current_time,
+        time=current_datetime,
         request_status=request_status,
         response_code=response_code,
         error_message=error_message
