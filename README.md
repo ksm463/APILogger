@@ -124,7 +124,7 @@ APILogger의 모든 주요 기능은 웹 브라우저를 통해 다음 페이지
             3.  "조회" 버튼을 클릭하면 해당 기간 동안 기록된 로그들만 필터링하여 테이블에 표시합니다.
             4.  "취소" 버튼을 누르면 날짜 입력 필드가 사라집니다.
 
-![Image](https://github.com/user-attachments/assets/17812af1-1579-4ff2-af07-eb430e2817bd)
+![Image](https://github.com/user-attachments/assets/e554e950-7f51-4bbf-ac3c-f825bb9c7b61)
 * **API 요청 입력 페이지 (`/input`)**:
     * **목적**: 사용자가 직접 API 요청 정보를 입력하여 외부 서버로 전송하고, 그 과정과 결과를 APILogger에 기록(로깅)하기 위한 페이지입니다. "API 정보 입력 페이지"라는 제목으로 표시됩니다.
     * **화면 구성**:
