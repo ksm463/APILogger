@@ -24,7 +24,7 @@ APILogger는 FastAPI를 사용하여 구축된 API 요청 로깅 및 프록시 �
 * **패키지 관리**: uv
 * **실행 환경**: Docker
 
-## 프로젝트 구조 (간략)
+## 프로젝트 구조
 
 ```
 /APILogger
