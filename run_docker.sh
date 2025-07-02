@@ -9,7 +9,7 @@ fastapi_path=$(pwd)
 
 
 docker run \
-    -it \
+    -d \
     -p ${port_num}8000:8000 \
     --name ${CONTAINER_NAME} \
     --privileged \
@@ -19,4 +19,5 @@ docker run \
     --shm-size 20g \
     --restart=always \
     -w /APILogger \
-    ${IMAGE_NAME}:${TAG}
+    ${IMAGE_NAME}:${TAG} \
+    tail -f /dev/null
